@@ -1,15 +1,9 @@
 module Main where
 
-import Prelude (Unit, show)
+import Prelude
 import Effect (Effect)
-import Effect.Console (log)
 
-flip :: ∀ a b c. (a -> b -> c) -> (b -> a -> c)
-flip f x y = f y x
-
-const :: ∀ a b. a -> b -> a
-const x _ = x
+import Ch5 as Ch5
 
 main :: Effect Unit
-main = do
-  log (show (flip const 1 2))
+main = Ch5.test
