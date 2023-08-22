@@ -11,6 +11,8 @@
   "license": "ISC",
   "devDependencies": {
     "purescript": "^0.15.10",
+    "purescript-language-server": "^0.17.1",
+    "purs-tidy": "^0.10.0",
     "purty": "^7.0.0",
     "spago": "^0.21.0"
   }

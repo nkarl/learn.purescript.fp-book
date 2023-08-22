@@ -27,9 +27,10 @@ singleton x = x : Nil
 null :: forall a. List a -> Boolean
 null Nil = true
 null _ = false
-  
+
 snoc :: forall a. List a -> a -> List a
 snoc Nil x = singleton x
+
 snoc (y : ys) x = y : snoc ys x
 
 test :: Effect Unit
