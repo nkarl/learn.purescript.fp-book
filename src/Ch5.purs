@@ -109,13 +109,17 @@ findIndex :: forall a. (a -> Boolean) -> List a -> Maybe Int
 -- findIndex _ Nil = Nothing
 findIndex predicate xs = check 0 xs
   where
+  check :: Int -> List a -> Maybe Int
   check _ Nil = Nothing
+
   check i (y : ys) = if predicate y then Just i else check (i + 1) ys
 
 findIndex2 :: forall a. (a -> Boolean) -> List a -> Maybe Int
 findIndex2 predicate xs = check 0 xs
   where
+  check :: Int -> List a -> Maybe Int
   check _ Nil = Nothing
+
   check i (y : ys) = case predicate y of
     true -> Just i
     false -> check (i + 1) ys
@@ -126,9 +130,24 @@ findLastIndex :: forall a. (a -> Boolean) -> List a -> Maybe Int
 findLastIndex predicate xs = check Nothing 0 xs
   where
   check :: Maybe Int -> Int -> List a -> Maybe Int
-  check fi _ Nil = fi
+  check found _ Nil = found
 
-  check fi i (y : ys) = check (if predicate y then Just i else fi) (i + 1) ys
+  check found i (y : ys) = check (if predicate y then Just i else found) (i + 1) ys
+
+findLastIndex2 :: forall a. (a -> Boolean) -> List a -> Maybe Int
+findLastIndex2 predicate xs = check 0 xs Nothing
+  where
+  check :: Maybe Int -> Int -> List a -> Maybe Int
+  check found _ Nil = found
+
+  check found i (y : ys) =
+    check
+      ( case predicate y of
+          true -> Just i
+          false -> found
+      )
+      (i + 1)
+      ys
 
 -- the test function
 test :: Effect Unit
@@ -181,3 +200,7 @@ test = do
   log $ show $ findLastIndex (_ == 10) (Nil :: List Int)
   log $ show $ findLastIndex (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
   log $ show $ findLastIndex (_ == 10) (11 : 12 : Nil)
+  -- f16 findLastIndex2
+  log $ show $ findLastIndex2 (_ == 10) (Nil :: List Int)
+  log $ show $ findLastIndex2 (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
+  log $ show $ findLastIndex2 (_ == 10) (11 : 12 : Nil)
