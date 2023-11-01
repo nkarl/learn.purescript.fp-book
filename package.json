@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "purescript": "^0.15.12",
+    "purescript-language-server": "^0.17.2",
     "spago": "^0.21.0"
   }
 }
