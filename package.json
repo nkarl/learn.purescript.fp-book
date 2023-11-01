@@ -10,10 +10,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "purescript": "^0.15.12",
-    "purescript-language-server": "^0.17.2",
     "purs-tidy": "^0.10.0",
-    "purty": "^7.0.0",
+    "purty": "^7.0.0"
+  },
+  "dependencies": {
+    "purescript": "^0.15.12",
     "spago": "^0.21.0"
   }
 }

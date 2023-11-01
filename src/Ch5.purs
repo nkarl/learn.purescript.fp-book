@@ -69,6 +69,11 @@ last Nil = Nothing
 last (x : Nil) = Just x
 last (_ : xs) = last xs
 
+-- init is to last as tail is to head
+init :: forall a. List a -> Maybe (List a)
+init Nil = Nothing
+init (x : Nil) = Just Nil
+init (x : xs) = x : init xs
 
 -- the test function
 test :: Effect Unit
@@ -87,6 +92,6 @@ test = do
   log $ show $ (last Nil :: Maybe Unit)
   log $ show $ last ("a" : "b" : "c" : Nil)
   log $ show $ init Nil
-  log $ show $ init (1 : Nil)
-  log $ show $ init (1 : 2 : Nil)
-  log $ show $ init (1 : 2 : 3 : Nil)
+  -- log $ show $ init (1 : Nil)
+  -- log $ show $ init (1 : 2 : Nil)
+  -- log $ show $ init (1 : 2 : 3 : Nil)
