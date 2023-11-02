@@ -162,14 +162,23 @@ findLastIndex2 predicate = check Nothing 0
 -- reverse a list
 reverse :: List ~> List
 reverse Nil = Nil
+
 reverse (x : Nil) = singleton x
+
 reverse (x : xs) = snoc (reverse xs) x
 
 reverse2 :: List ~> List
 reverse2 = build Nil
   where
   build acc Nil = acc
+
   build acc (x : xs) = build (x : acc) xs
+
+-- concat a bunch of lists together as a single list preserving the order of elements
+concat :: forall a. List (List a) -> List a
+concat Nil = Nil
+concat (Nil : xss) = concat xss
+concat ((x : xs) : xss) = x : concat (xs : xss)
 
 -- the test function
 test :: Effect Unit
@@ -234,3 +243,6 @@ test = do
   log $ show $ reverse (10 : 20 : 30 : Nil)
   log $ show "f17 reverse O(N) via accumulator"
   log $ show $ reverse2 (10 : 20 : 30 : Nil)
+  log $ show "f18 concat"
+  log $ show
+    $ concat ((1 : 2 : 3 : Nil) : (4 : 5 : Nil) : (6 : Nil) : (Nil) : Nil)
