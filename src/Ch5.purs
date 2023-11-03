@@ -7,7 +7,7 @@ import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Console (log)
-import Prelude (Unit, (+), (-), (<), (>=), (/=), (==), show, discard, negate, otherwise, type (~>))
+import Prelude (Unit, (<<<), (+), (-), (<), (>), (>=), (/=), (==), show, discard, negate, otherwise, type (~>))
 
 -- f01. the flip function that flips the order of the arguments of a function
 flip :: forall a b c. (a -> b -> c) -> (b -> a -> c)
@@ -159,7 +159,7 @@ findLastIndex2 predicate = check Nothing 0
       (i + 1)
       ys
 
--- reverse a list
+-- f17. reverse a list
 reverse :: List ~> List
 reverse Nil = Nil
 
@@ -174,12 +174,42 @@ reverse2 = build Nil
 
   build acc (x : xs) = build (x : acc) xs
 
--- concat a bunch of lists together as a single list preserving the order of elements
+-- f18. concat a bunch of lists together as a single list preserving the order of elements
 concat :: forall a. List (List a) -> List a
 concat Nil = Nil
+
 concat (Nil : xss) = concat xss
+
 concat ((x : xs) : xss) = x : concat (xs : xss)
 
+-- f19. filter
+filter :: forall a. (a -> Boolean) -> List a -> List a
+filter _ Nil = Nil
+
+filter predicate (x : xs) = case predicate x of
+  true -> x : (filter predicate xs)
+  false -> filter predicate xs
+
+filter2 :: forall a. (a -> Boolean) -> List a -> List a
+filter2 _ Nil = Nil
+
+filter2 predicate (x : xs)
+  | predicate x = x : filter2 predicate xs
+  | otherwise = filter2 predicate xs
+
+filter3 :: forall a. (a -> Boolean) -> List a -> List a
+filter3 predicate = reverse <<< build Nil
+  where
+  build acc Nil = acc
+
+  build acc (x : xs) = case predicate x of
+    true -> build (x : acc) xs
+    false -> build acc xs
+
+-- select
+-- Selective applicative functors: declare your effects statically, select which to execute dynamically. This is a library for selective applicative functors, or just selective functors for short, an abstraction between applicative functors and monads, introduced in
+-- branch
+-- The branch function is a natural generalization of select: instead of skipping an unnecessary effect, it chooses which of the two given effectful functions to apply to a given argument; the other effect is unnecessary. It is possible to implement branch in terms of select, which is a good puzzle (give it a try!).
 -- the test function
 test :: Effect Unit
 test = do
@@ -246,3 +276,7 @@ test = do
   log $ show "f18 concat"
   log $ show
     $ concat ((1 : 2 : 3 : Nil) : (4 : 5 : Nil) : (6 : Nil) : (Nil) : Nil)
+  log $ show "f19 filter"
+  log $ show $ filter (4 > _) $ (1 : 2 : 3 : 4 : 5 : 6 : Nil)
+  log $ show $ filter2 (4 > _) $ (1 : 2 : 3 : 4 : 5 : 6 : Nil)
+  log $ show $ filter3 (4 > _) $ (1 : 2 : 3 : 4 : 5 : 6 : Nil)
