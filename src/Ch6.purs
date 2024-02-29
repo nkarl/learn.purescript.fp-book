@@ -8,8 +8,7 @@ module Ch6
   , company
   , facility
   , person
-  )
-  where
+  ) where
 
 type Address
   = { street1 :: String

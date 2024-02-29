@@ -213,7 +213,7 @@ filter3 predicate = reverse <<< build Nil
 -- the test function
 test :: Effect Unit
 test = do
-  log $ show $ "f01"
+  log $ show "f01"
   log $ show $ flip const 1 2
   log $ show "f02"
   flip const 2 1 # show # log
@@ -274,8 +274,7 @@ test = do
   log $ show "f17 reverse O(N) via accumulator"
   log $ show $ reverse2 (10 : 20 : 30 : Nil)
   log $ show "f18 concat"
-  log $ show
-    $ concat ((1 : 2 : 3 : Nil) : (4 : 5 : Nil) : (6 : Nil) : (Nil) : Nil)
+  log $ show $ concat ((1 : 2 : 3 : Nil) : (4 : 5 : Nil) : (6 : Nil) : (Nil) : Nil)
   log $ show "f19 filter"
   log $ show $ filter (4 > _) $ (1 : 2 : 3 : 4 : 5 : 6 : Nil)
   log $ show $ filter2 (4 > _) $ (1 : 2 : 3 : 4 : 5 : 6 : Nil)

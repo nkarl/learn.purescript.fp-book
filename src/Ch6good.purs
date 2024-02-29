@@ -1,4 +1,4 @@
-module Ch6bad where
+module Ch6good where
 
 import Ch6
 import Prelude
@@ -20,6 +20,5 @@ instance hasAddressResidence :: HasAddress Residence where
 instance hasAddressEmptyLot :: HasAddress EmptyLot where
   getAddress (EmptyLot lot) = lot.address
 
-
-getDirections :: forall a. Show HasAddress a => a -> Directions
-getDirections hasAddr = let address = getAddress hasAddr in ...
+--getDirections :: forall a. Show HasAddress a => a -> Directions
+--getDirections hasAddr = let address = getAddress hasAddr in ...
