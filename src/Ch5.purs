@@ -7,7 +7,7 @@ import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Console (log)
-import Prelude (Unit, (<<<), (+), (-), (<), (>), (>=), (/=), (==), show, discard, negate, otherwise, type (~>))
+import Prelude (type (~>), Unit, discard, negate, otherwise, show, (+), (-), (/=), (<), (<<<), (==), (>), (>=))
 
 -- f01. the flip function that flips the order of the arguments of a function
 flip :: forall a b c. (a -> b -> c) -> (b -> a -> c)
