@@ -14,7 +14,8 @@ import Prelude
 --import Maybe.Maybe07 as Maybe07
 --import Either.Either01 as Either01
 --import Parser.Applicative as ApplicativeParser
-import Parser.Monadic01 as MonadicParser
+--import Parser.Monadic01 as MonadicParser
+import Reader.Monadic01 as ReaderMonad
 import Effect (Effect)
 
 main :: Effect Unit
@@ -27,4 +28,5 @@ main = do
   --Maybe07.test
   --Either01.test
   --ApplicativeParser.test
-  MonadicParser.test
+  --MonadicParser.test
+  ReaderMonad.test

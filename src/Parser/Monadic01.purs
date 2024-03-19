@@ -43,6 +43,9 @@ instance parsingErrorEOF :: Failure ErrorEOF where
 unwrap :: forall e a. Ctx e a -> Action e a
 unwrap (Ctx f) = f
 
+unwrap' :: forall a. Ctx ErrorEOF a -> Action ErrorEOF a
+unwrap' = unwrap
+
 {--
   DEFINE APPLICATIVE FUNCTOR INSTANCES
 --}
@@ -98,16 +101,15 @@ take3chars' = do
 
 test :: Effect Unit
 test = do
-  log $ show $ (unwrap take1char_ $ "ABC" :: Either ErrorEOF _)
-  log $ show $ (unwrap take2chars $ "ABC" :: Either ErrorEOF _)
-  log $ show $ (unwrap take3chars $ "ABC" :: Either ErrorEOF _)
-  log $ show $ (unwrap take3chars $ "AB" :: Either ErrorEOF _)
+  log $ show $ (unwrap' take1char_ $ "ABC" )
+  log $ show $ (unwrap' take2chars $ "ABC" )
+  log $ show $ (unwrap' take3chars $ "ABC" )
+  log $ show $ (unwrap' take3chars $ "AB" )
   log
     $ show do
         let
           x = "ABC"
-
-          y = unwrap take1char_ $ x
-        (y :: Either ErrorEOF _)
-  log $ show $ (unwrap take3chars' $ "ABC" :: Either ErrorEOF _)
-  log $ show $ (unwrap take3chars' $ "AB" :: Either ErrorEOF _)
+          y = (unwrap' take1char_) $ x
+        (y )
+  log $ show $ (unwrap' take3chars' $ "ABC" )
+  log $ show $ (unwrap' take3chars' $ "AB" )
