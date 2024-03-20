@@ -85,13 +85,14 @@ take3chars = Tuple `map` take1char `apply` (Tuple `map` take1char `apply` take1c
 
 test :: Effect Unit
 test = do
-  log $ show $ (unwrap' take1char $ "ABC" )
-  log $ show $ (unwrap' take2chars $ "ABC" )
-  log $ show $ (unwrap' take3chars $ "ABC" )
-  log $ show $ (unwrap' take3chars $ "AB" )
+  log $ show $ (unwrap' take1char $ "ABC")
+  log $ show $ (unwrap' take2chars $ "ABC")
+  log $ show $ (unwrap' take3chars $ "ABC")
+  log $ show $ (unwrap' take3chars $ "AB")
   log
     $ show do
         let
           x = "ABC"
+
           y = unwrap' take1char $ x
         y
