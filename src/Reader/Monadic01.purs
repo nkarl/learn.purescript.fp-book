@@ -31,8 +31,8 @@ instance applicativeReader :: Applicative (Reader r) where
 --                                     ^
 --                                  this is where we can use `join`
 --                                  however we desire something leaner
---------------- unwrap (f $ cx r)   ::                r -> b
---------------- unwrap (f $ cx r) r ::                     b
+--              unwrap (f $ cx r)   ::                r -> b
+--              unwrap (f $ cx r) r ::                     b
 -- Reader \r -> unwrap (f $ cx r) r :: Reader r            b
 instance bindReader :: Bind (Reader r) where
   --bind :: forall a b. Reader r a -> (a -> Reader r b) -> Reader r b
