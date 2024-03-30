@@ -6,8 +6,9 @@ import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Effect.Class.Console (log)
 
-data Either' a b
-  = Left a
+{-- DATA MODEL --}
+data Either' a b -- sum type of binary choices with more freedom
+  = Left a -- typically for error handling
   | Right b
 
 derive instance genericEither' :: Generic (Either' a b) _

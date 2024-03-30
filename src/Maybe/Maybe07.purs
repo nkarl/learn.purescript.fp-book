@@ -7,15 +7,16 @@ import Effect (Effect)
 import Effect.Class.Console (log)
 
 {-- DATA MODEL --}
-data Maybe' a
+data Maybe' a -- sum type of binary choices with very restricted outcome
   = Nothing
   | Just a
 
-derive instance genericMaybe' :: Generic (Maybe' a) _
-
+{-- DERIVATIVES --}
 derive instance eqMaybe' :: Eq a => Eq (Maybe' a)
 
 derive instance ordMaybe' :: Ord a => Ord (Maybe' a)
+
+derive instance genericMaybe' :: Generic (Maybe' a) _
 
 instance showMaybe' :: Show a => Show (Maybe' a) where
   show = genericShow
@@ -57,10 +58,10 @@ instance bindMaybe' :: Bind Maybe' where
   bind (Just x) f = f x
 
 instance joinMaybe' :: Join Maybe' where
+  --join Nothing = Nothing
+  --join (Just x)= x
   join = (_ `bind` identity)
 
---join Nothing = Nothing
---join (Just x)= x
 instance monadMaybe' :: Monad Maybe'
 
 test :: Effect Unit
