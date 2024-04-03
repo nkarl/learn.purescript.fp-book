@@ -1,6 +1,7 @@
 module Main where
 
 import Prelude
+import Effect (Effect)
 --import Ch5 as Ch5
 --import Ch6 as Ch6
 --import Ch7a as Ch7a
@@ -15,8 +16,8 @@ import Prelude
 --import Either.Either01 as Either01
 --import Parser.Applicative as ApplicativeParser
 --import Parser.Monadic01 as MonadicParser
-import Reader.Monadic01 as ReaderMonad
-import Effect (Effect)
+--import Reader.Monadic01 as ReaderMonad
+import Ch23a as Ch23a
 
 main :: Effect Unit
 main = do
@@ -29,4 +30,5 @@ main = do
   --Either01.test
   --ApplicativeParser.test
   --MonadicParser.test
-  ReaderMonad.test
+  --ReaderMonad.test
+  Ch23a.test

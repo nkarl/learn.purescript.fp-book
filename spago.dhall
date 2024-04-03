@@ -11,12 +11,16 @@ When creating a new Spago project, you can use
 to generate this file without the comments in this block.
 -}
 { name = "my-project"
-, dependencies = [
-    "console"
+, dependencies =
+  [ "aff"
+  , "avar"
+  , "console"
+  , "datetime"
   , "effect"
   , "either"
   , "lists"
   , "maybe"
+  , "partial"
   , "prelude"
   , "strings"
   , "tuples"
