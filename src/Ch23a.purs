@@ -32,7 +32,7 @@ bomb :: (AVar TickTock) -> Int -> Aff Unit
 bomb ttAVar deadline = countDown deadline
   where
   countDown :: Int -> Aff Unit
-  countDown acc = do
+  countDown acc =
     if acc == 0 then
       log "BOOM!!!"
     else do

@@ -17,7 +17,10 @@ import Effect (Effect)
 --import Parser.Applicative as ApplicativeParser
 --import Parser.Monadic01 as MonadicParser
 --import Reader.Monadic01 as ReaderMonad
-import Ch23a as Ch23a
+--import Ch23a as Ch23a
+--import TickTock.Rep01 as TickTock.Rep01
+--import TickTock.Rep03 as TickTock.Rep03
+import TickTock.Rep04 as TickTock.Rep04
 
 main :: Effect Unit
 main = do
@@ -31,4 +34,7 @@ main = do
   --ApplicativeParser.test
   --MonadicParser.test
   --ReaderMonad.test
-  Ch23a.test
+  --Ch23a.test
+  --TickTock.Rep01.test
+  --TickTock.Rep03.test
+  TickTock.Rep04.test
