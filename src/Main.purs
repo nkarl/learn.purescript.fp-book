@@ -6,21 +6,13 @@ import Effect (Effect)
 --import Ch6 as Ch6
 --import Ch7a as Ch7a
 --import Ch19 as Ch19
---import Maybe.Maybe01 as Maybe01
---import Maybe.Maybe02 as Maybe02
---import Maybe.Maybe03 as Maybe03
---import Maybe.Maybe04 as Maybe04
---import Maybe.Maybe05 as Maybe05
---import Maybe.Maybe06 as Maybe06
 --import Maybe.Maybe07 as Maybe07
 --import Either.Either01 as Either01
 --import Parser.Applicative as ApplicativeParser
 --import Parser.Monadic01 as MonadicParser
 --import Reader.Monadic01 as ReaderMonad
 --import Ch23a as Ch23a
---import TickTock.Rep01 as TickTock.Rep01
---import TickTock.Rep03 as TickTock.Rep03
-import TickTock.Rep04 as TickTock.Rep04
+import TickTock.Rep05 as TickTock.Rep05
 
 main :: Effect Unit
 main = do
@@ -35,6 +27,4 @@ main = do
   --MonadicParser.test
   --ReaderMonad.test
   --Ch23a.test
-  --TickTock.Rep01.test
-  --TickTock.Rep03.test
-  TickTock.Rep04.test
+  TickTock.Rep05.test
