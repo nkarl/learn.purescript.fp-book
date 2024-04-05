@@ -13,16 +13,21 @@ to generate this file without the comments in this block.
 { name = "my-project"
 , dependencies =
   [ "aff"
+  , "aff-bus"
   , "avar"
   , "console"
   , "datetime"
   , "effect"
   , "either"
+  , "integers"
   , "lists"
   , "maybe"
+  , "newtype"
   , "partial"
   , "prelude"
+  , "random"
   , "strings"
+  , "transformers"
   , "tuples"
   ]
 , packages = ./packages.dhall
