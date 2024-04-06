@@ -1,7 +1,9 @@
 module CSV.Rep02 where
 
 import Prelude
+
 import Data.Generic.Rep (class Generic)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
@@ -51,15 +53,20 @@ instance toCSVPerson :: ToCSV Person where
   toCSV ( Person { name, age, occupation }
   ) = CSV $ show name <> "," <> show age <> "," <> show occupation
 
+class FromCSV a where
+  fromCSV :: CSV -> Maybe a
+
+--instance fromCSVPerson where
+
 -- NOTE: module test
 test :: Effect Unit
 test = do
   let
     person =
       Person
-        { name: "Sue Smith,23,Doctor"
-        , age: 23
-        , occupation: Doctor
+        { name       : "Sue Smith"
+        , age        : 23
+        , occupation : Doctor
         }
   log $ show $ toCSV person
   log $ show $ toCSV person == CSV "Sue Smith,23,Doctor"
