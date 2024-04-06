@@ -1,4 +1,4 @@
-module CSV.Rep02 where
+module CSV.Rep01 where
 
 import Prelude
 
@@ -86,6 +86,7 @@ instance fromCSVPerson :: FromCSV Person where
 test :: Effect Unit
 test = do
   let
+    line   = "Sue Smith,23,Doctor"
     person =
       Person
         { name       : "Sue Smith"
@@ -93,4 +94,6 @@ test = do
         , occupation : Doctor
         }
   log $ show $ toCSV person
-  log $ show $ toCSV person == CSV "Sue Smith,23,Doctor"
+  log $ show $ toCSV person == CSV line
+  log $ show $ Just person  == (fromCSV        $ CSV     line)
+  log $ show $ Just person  == (toCSV   person # fromCSV     )
