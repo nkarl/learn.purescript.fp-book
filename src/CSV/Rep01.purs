@@ -41,8 +41,8 @@ data Occupation
   | Lawyer
   | Unemployed
 
-derive instance      eqOccupation :: Eq       Occupation
-derive instance genericOccupation :: Generic  Occupation _
+derive instance      eqOccupation :: Eq      Occupation
+derive instance genericOccupation :: Generic Occupation _
 
 instance showOccupation :: Show Occupation where
   show = genericShow
@@ -60,11 +60,11 @@ class FromCSV a where
 
 toOccupation :: String -> Maybe Occupation
 toOccupation = case _ of
-  "Doctor" -> Just Doctor
-  "Dentist" -> Just Dentist
-  "Lawyer" -> Just Lawyer
+  "Doctor"     -> Just Doctor
+  "Dentist"    -> Just Dentist
+  "Lawyer"     -> Just Lawyer
   "Unemployed" -> Just Unemployed
-  _ -> Nothing
+  _            -> Nothing
 
 instance fromCSVPerson :: FromCSV Person where
   fromCSV (CSV string) = do
@@ -82,7 +82,7 @@ instance fromCSVPerson :: FromCSV Person where
                       }
         _ -> Nothing
 
--- NOTE: module test
+-- NOTE: module's test
 test :: Effect Unit
 test = do
   let
