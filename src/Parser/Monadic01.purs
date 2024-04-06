@@ -18,6 +18,7 @@ type State a
 type Action e a
   = Failure e => String -> Either e (State a)
 
+--newtype Action e a = Action (Failure e => String -> Either e (State a))
 -- | Some State error. Produced by some unsuccessful action.
 class Failure (e :: Type) where
   eof :: e
@@ -40,42 +41,51 @@ instance parsingErrorEOF :: Failure ErrorEOF where
   eof = EOF
 
 {-- helper --}
-unwrap :: forall e a. Context e a -> Action e a
+unwrap :: forall e a. (Context e) a -> (Action e) a
 unwrap (Context f) = f
 
-unwrap' :: forall a. Context ErrorEOF a -> Action ErrorEOF a
+unwrap' :: forall a. (Context ErrorEOF) a -> (Action ErrorEOF) a
 unwrap' = unwrap
 
 {--
   DEFINE APPLICATIVE FUNCTOR INSTANCES
 --}
--- f :: (a -> b)
--- cx :: Context e a
--- unwrap cx :: a
+-- f          :: (a -> b)
+-- cx         :: String -> (Either e (State a))
+-- cx s       ::            Either e (State a)
+-- map f      ::                   (Context e) a -> (Context e) b
 instance functorContext :: Functor (Context e) where
   --map :: forall a b. (a -> b) -> (Context e) a -> (Context e) b
-  --map f c = Context \x -> (map f) `map` (unwrap c $ x)
-  map f cx = Context \s -> (map f) `map` (unwrap cx $ s)
+  --map f (Context cx) = Context \s -> (map f) `map` (cx s)
+  map f (Context cx) =
+    Context \s -> do
+      Tuple s' x <- cx s
+      pure $ Tuple s' $ f x
 
---f :: String -> Either err $ State (a -> b)
---g :: String -> Either err $ State  a
+--c'f     :: String -> (Either err State (a -> b))
+--c'f s   ::            Either err State (a -> b)
+--c'x     :: String -> (Either err State  a)
+--c'x s'1 ::            Either err State  a
 instance applyContext :: Apply (Context e) where
   --apply :: forall a b. (Context e) (a -> b) -> (Context e) a -> (Context e) b
-  apply cf ca =
+  --apply cf cx
+  apply (Context c'f) (Context c'x) =
     Context \s -> do
-      Tuple s'1 f <- unwrap cf s
-      Tuple s'2 g <- unwrap ca s'1
-      pure $ Tuple s'2 (f g)
+      Tuple s'1 f <- c'f s
+      Tuple s'2 x <- c'x s'1
+      pure $ Tuple s'2 (f x)
 
 instance applicativeContext :: Applicative (Context e) where
   --pure :: forall a. a -> (Context e) a
-  pure c = Context \x -> pure (Tuple x c)
+  pure x = Context \s -> Right (Tuple s x)
 
 instance bindContext :: Bind (Context e) where
-  bind c f =
-    Context \x -> do
-      Tuple s g <- unwrap c $ x
-      unwrap (f g) $ s
+  -- bind :: forall a b. (Context e) a -> (a -> Context e a) -> Context e b
+  bind (Context cx) f =
+    Context \s -> do
+      Tuple s' x <- cx s
+      --unwrap (f x) $ s'
+      f x # \(Context g) -> g s'
 
 -- | Uncons a single character from a String.
 take1char_ :: forall e. (Context e) Char

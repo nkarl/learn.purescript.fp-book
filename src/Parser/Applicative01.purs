@@ -43,30 +43,36 @@ instance parsingErrorEOF :: Failure ErrorEOF where
 unwrap :: forall err a. (Ctx err) a -> (Action err) a
 unwrap (Ctx f) = f
 
-unwrap' :: forall a. (Ctx ErrorEOF) a -> (Action ErrorEOF) a
-unwrap' = unwrap
-
 {--
   DEFINE APPLICATIVE FUNCTOR INSTANCES
 --}
+
 instance functorCtx :: Functor (Ctx e) where
   --map :: forall a b. (a -> b) -> (Ctx e) a -> (Ctx e) b
-  map f c = Ctx \x -> (map f) `map` (unwrap c $ x)
+  map f (Ctx cx) =
+    Ctx \s ->
+      (map f) {- `map` instance of Data.Either, which partialy takes `f` -}
+        <$> (cx s) {- `<$>` instance of Data.Functor -}
+  --map f (Ctx cx) = Ctx \s -> do
+     --Tuple s' x <- cx s
+     --pure $ Tuple s' $ f x
 
---f :: String -> Either error Or State (a -> b)
---g :: String -> Either error Or State  a
+--cf      :: String -> Either error {- or -} State (a -> b)
+--cf s    ::           Either error          State (a -> b)
+--cx      :: String -> Either error {- or -} State  a
+--cx s'1  ::           Either error          State  a
 instance applyCtx :: Apply (Ctx e) where
   --apply :: forall a b. (Ctx e) (a -> b) -> (Ctx e) a -> (Ctx e) b
-  apply cf ca =
-    Ctx \x -> case unwrap cf $ x of
-      Left error -> Left error -- repetitive
-      Right (Tuple s'1 f) -> case unwrap ca $ s'1 of
-        Left error -> Left error -- repetitive
-        Right (Tuple s'2 g) -> Right $ Tuple s'2 (f g)
+  apply (Ctx c'f) (Ctx c'x) =
+    Ctx \s -> case c'f s of
+      Left error -> Left error
+      Right (Tuple s'1 f) -> case c'x s'1 of
+        Left error -> Left error
+        Right (Tuple s'2 x) -> Right (Tuple s'2 (f x))
 
 instance applicativeCtx :: Applicative (Ctx e) where
   --pure :: forall a. a -> (Ctx e) a
-  pure x = Ctx \s -> pure (Tuple s x)
+  pure x = Ctx \s -> Right (Tuple s x)
 
 -- | Uncons a single character from a String.
 take1char :: forall e. (Ctx e) Char
@@ -83,6 +89,9 @@ take2chars = Tuple `map` take1char `apply` take1char
 take3chars :: forall e. (Ctx e) (Tuple Char (Tuple Char Char))
 take3chars = Tuple `map` take1char `apply` (Tuple `map` take1char `apply` take1char)
 
+unwrap' :: forall a. (Ctx ErrorEOF) a -> (Action ErrorEOF) a
+unwrap' = unwrap
+
 test :: Effect Unit
 test = do
   log $ show $ (unwrap' take1char $ "ABC")
@@ -93,6 +102,5 @@ test = do
     $ show do
         let
           x = "ABC"
-
           y = unwrap' take1char $ x
         y
