@@ -3,9 +3,11 @@ module CSV.Rep02 where
 import Prelude
 
 import Data.Generic.Rep (class Generic)
+import Data.Int (fromString)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
+import Data.String (Pattern(..), split)
 import Effect (Effect)
 import Effect.Class.Console (log)
 
@@ -50,13 +52,35 @@ class ToCSV a where
   toCSV :: a -> CSV
 
 instance toCSVPerson :: ToCSV Person where
-  toCSV ( Person { name, age, occupation }
-  ) = CSV $ show name <> "," <> show age <> "," <> show occupation
+  toCSV ( Person { name, age, occupation } ) =
+    CSV ( show name <> "," <> show age <> "," <> show occupation )
 
 class FromCSV a where
   fromCSV :: CSV -> Maybe a
 
---instance fromCSVPerson where
+toOccupation :: String -> Maybe Occupation
+toOccupation = case _ of
+  "Doctor" -> Just Doctor
+  "Dentist" -> Just Dentist
+  "Lawyer" -> Just Lawyer
+  "Unemployed" -> Just Unemployed
+  _ -> Nothing
+
+instance fromCSVPerson :: FromCSV Person where
+  fromCSV (CSV string) = do
+     let  line = split (Pattern ",") string
+     case line of
+        [ name, age, occupation ]
+          -> do
+                age'        <- fromString age
+                occupation' <- toOccupation occupation
+                pure
+                  $ Person
+                      { name: name
+                      , age : age'
+                      , occupation: occupation'
+                      }
+        _ -> Nothing
 
 -- NOTE: module test
 test :: Effect Unit
