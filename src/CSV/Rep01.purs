@@ -27,12 +27,22 @@ derive newtype instance    showCSV :: Show    CSV
 -- NOTE: product typed data for a person
 data Person
   = Person
-    { name       :: String
+    { name       :: Name
     , age        :: Int
     , occupation :: Occupation
     }
 
 derive instance eqPerson :: Eq Person
+
+-- NOTE: newtype wrapper for Person.name to fix the double quote wrapped string problem.
+newtype Name = Name String
+
+derive         instance newtypeName :: Newtype Name _
+derive newtype instance      eqName :: Eq      Name
+derive         instance genericName :: Generic Name _
+
+instance showName :: Show Name where
+  show (Name name) = name
 
 -- NOTE: sum typed data for possible occupations
 data Occupation
@@ -76,7 +86,7 @@ instance fromCSVPerson :: FromCSV Person where
                 occupation' <- toOccupation occupation
                 pure
                   $ Person
-                      { name: name
+                      { name: Name name
                       , age : age'
                       , occupation: occupation'
                       }
@@ -89,7 +99,7 @@ test = do
     line   = "Sue Smith,23,Doctor"
     person =
       Person
-        { name       : "Sue Smith"
+        { name       : Name "Sue Smith"
         , age        : 23
         , occupation : Doctor
         }

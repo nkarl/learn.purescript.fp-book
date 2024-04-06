@@ -6,7 +6,7 @@ import Effect (Effect)
 --import Ch6 as Ch6
 --import Ch7a as Ch7a
 --import Ch7b as Ch7b
-import CSV.Rep02 as CSV.Rep02
+import CSV.Rep01 as CSV.Rep01
 
 --import Ch19 as Ch19
 --import Maybe.Maybe07 as Maybe07
@@ -21,7 +21,7 @@ main :: Effect Unit
 main = do
   --Ch5.test
   --Ch7b.test
-  CSV.Rep02.test
+  CSV.Rep01.test
 
 --Ch19.testMaybe
 --Ch19.testEither
