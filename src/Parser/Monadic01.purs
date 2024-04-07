@@ -1,6 +1,7 @@
 module Parser.Monadic01 where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
@@ -16,7 +17,7 @@ type State a
 
 -- | An Action.
 type Action e a
-  = Failure e => String -> Either e (State a)
+  = Failure e => (String -> Either e (State a))
 
 --newtype Action e a = Action (Failure e => String -> Either e (State a))
 -- | Some State error. Produced by some unsuccessful action.
@@ -123,7 +124,6 @@ test = do
     $ show do
         let
           x = "ABC"
-
           y = (unwrap' take1char_) $ x
         (y)
   log $ show $ (unwrap' take3chars' $ "ABC")

@@ -10,13 +10,13 @@ import Effect (Effect)
 --import Ch19 as Ch19
 --import Maybe.Maybe07 as Maybe07
 --import Either.Either01 as Either01
-import Parser.Applicative01 as Parser.Applicative01
-
---import Parser.Monadic01 as MonadicParser
+--import Parser.Applicative01 as Parser.Applicative01
+import Parser.Monadic02 as Parser.Monadic02
 --import Reader.Monadic01 as ReaderMonad
 --import Ch23a as Ch23a
 --import TickTock.Rep05 as TickTock.Rep05
 --import Ch23b as Ch23b
+
 main :: Effect Unit
 main = do
   --Ch5.test
@@ -28,10 +28,9 @@ main = do
   --AnotherMaybe.test
   --Maybe07.test
   --Either01.test
-  Parser.Applicative01.test
-
---MonadicParser.test
---ReaderMonad.test
---Ch23a.test
---TickTock.Rep05.test
---Ch23b.test
+  --Parser.Applicative01.test
+  Parser.Monadic02.test
+  --ReaderMonad.test
+  --Ch23a.test
+  --TickTock.Rep05.test
+  --Ch23b.test

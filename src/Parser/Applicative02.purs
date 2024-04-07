@@ -16,7 +16,7 @@ type State a
 
 -- | An Action.
 type Action err a
-  = Failure err => (String -> Either err (State a))
+  = Failure err => String -> Either err (State a)
 
 -- | Some State error. Produced by some unsuccessful action.
 class Failure (err :: Type) where
@@ -30,8 +30,17 @@ newtype Ctx err a
 data ErrorEOF
   = EOF
 
+--f     :: Tuple
+--cx    :: String -> Either err (State a)
+--cx s  ::           Either err (State a)
 instance functorCtx :: Functor (Ctx e) where
-  map f (Ctx c) = Ctx \x -> map (map f) (c x)
+  -- map :: (a -> b) -> f a -> f b
+  map f (Ctx cx) = Ctx \s -> do
+     let
+         -- g :: (State a -> State b)
+        g = map f -- `map` instance of Data.Tuple partially takes `f`
+        x = cx s  -- x :: Either err (State a)
+     g <$> x -- `<$>` instance of Data.Either combining `g` and `x`
 
 derive instance genericErrorEOF :: Generic ErrorEOF _
 
