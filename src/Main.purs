@@ -11,11 +11,12 @@ import Effect (Effect)
 --import Maybe.Maybe07 as Maybe07
 --import Either.Either01 as Either01
 --import Parser.Applicative01 as Parser.Applicative01
-import Parser.Monadic02 as Parser.Monadic02
+--import Parser.Monadic02 as Parser.Monadic02
 --import Reader.Monadic01 as ReaderMonad
 --import Ch23a as Ch23a
 --import TickTock.Rep05 as TickTock.Rep05
 --import Ch23b as Ch23b
+import EchoServer.Ch25a as EchoServer.Ch25a
 
 main :: Effect Unit
 main = do
@@ -29,8 +30,9 @@ main = do
   --Maybe07.test
   --Either01.test
   --Parser.Applicative01.test
-  Parser.Monadic02.test
+  --Parser.Monadic02.test
   --ReaderMonad.test
   --Ch23a.test
   --TickTock.Rep05.test
   --Ch23b.test
+  EchoServer.Ch25a.test
