@@ -46,8 +46,6 @@ data ProfessionalStatus
     NOTE: Instances
 --}
 
-instance encodeInt :: Encode Int where
-  encode = genericEncode defaultOptions
 
 test :: Effect Unit
 test = do

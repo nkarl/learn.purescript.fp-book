@@ -5,7 +5,6 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class.Console (log)
-import Partial.Unsafe (unsafeCrashWith)
 
 newtype State s a
   = State (s -> Tuple a s)

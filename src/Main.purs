@@ -16,7 +16,8 @@ import Effect (Effect)
 --import Ch23a as Ch23a
 --import TickTock.Rep05 as TickTock.Rep05
 --import Ch23b as Ch23b
-import EchoServer.Ch25a as EchoServer.Ch25a
+--import EchoServer.Ch25a as EchoServer.Ch25a
+import FFI.JoinPath as FFI.JoinPath
 
 main :: Effect Unit
 main = do
@@ -35,4 +36,5 @@ main = do
   --Ch23a.test
   --TickTock.Rep05.test
   --Ch23b.test
-  EchoServer.Ch25a.test
+  --EchoServer.Ch25a.test
+  FFI.JoinPath.test

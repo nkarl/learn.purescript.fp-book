@@ -22,6 +22,7 @@ to generate this file without the comments in this block.
   , "contravariant"
   , "control"
   , "datetime"
+  , "debug"
   , "effect"
   , "either"
   , "exceptions"
@@ -34,13 +35,13 @@ to generate this file without the comments in this block.
   , "prelude"
   , "profunctor"
   , "random"
+  , "record"
   , "strings"
   , "tailrec"
   , "transformers"
   , "tuples"
   , "unfoldable"
   , "unicode"
-  , "debug"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
