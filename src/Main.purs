@@ -17,7 +17,8 @@ import Effect (Effect)
 --import TickTock.Rep05 as TickTock.Rep05
 --import Ch23b as Ch23b
 --import EchoServer.Ch25a as EchoServer.Ch25a
-import FFI.JoinPath as FFI.JoinPath
+--import FFI.JoinPath as FFI.JoinPath
+import RNG.RandomNumber01 as RandomNumber01
 
 main :: Effect Unit
 main = do
@@ -37,4 +38,5 @@ main = do
   --TickTock.Rep05.test
   --Ch23b.test
   --EchoServer.Ch25a.test
-  FFI.JoinPath.test
+  --FFI.JoinPath.test
+  RandomNumber01.test
