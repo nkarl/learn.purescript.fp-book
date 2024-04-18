@@ -1,7 +1,9 @@
 module Main where
 
 import Prelude
+
 import Effect (Effect)
+
 --import Ch5 as Ch5
 --import Ch6 as Ch6
 --import Ch7a as Ch7a
@@ -15,10 +17,10 @@ import Effect (Effect)
 --import Reader.Monadic01 as ReaderMonad
 --import Ch23a as Ch23a
 --import TickTock.Rep05 as TickTock.Rep05
---import Ch23b as Ch23b
+import Ch23b as Ch23b
 --import EchoServer.Ch25a as EchoServer.Ch25a
 --import FFI.JoinPath as FFI.JoinPath
-import RNG.RandomNumber01 as RandomNumber01
+--import RNG.RandomNumber01 as RandomNumber01
 
 main :: Effect Unit
 main = do
@@ -36,7 +38,7 @@ main = do
   --ReaderMonad.test
   --Ch23a.test
   --TickTock.Rep05.test
-  --Ch23b.test
+  Ch23b.test
   --EchoServer.Ch25a.test
   --FFI.JoinPath.test
-  RandomNumber01.test
+  --RandomNumber01.test
