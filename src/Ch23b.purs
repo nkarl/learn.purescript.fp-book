@@ -2,11 +2,11 @@ module Ch23b where
 
 import Prelude
 
-import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask)
+import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
 import Control.Monad.Rec.Class (forever)
 import Control.Monad.State.Trans (StateT, get, modify_, runStateT)
 import Control.Monad.Trans.Class (lift)
-import Effect (Effect, forE)
+import Effect (Effect)
 import Effect.Aff (Aff, Milliseconds(..), delay, forkAff, launchAff_)
 import Effect.Aff.Bus (BusRW)
 import Effect.Aff.Bus as Bus
@@ -22,8 +22,13 @@ import Effect.Random (random)
 type StrBus = BusRW String
 -- | could contain more properties, for example env variables.
 type Reader = { bus :: StrBus } 
--- the program's state, contains the count. NOTE: can it be replaced with forE instead?
+-- the program's state, contains the count.
 type State  = { count :: Int }
+{--
+  NOTE: can it be replaced with forE instead?
+    - a `forE` would work, because the control because the count is modified by each fiber spawn. Leaving the count in a universally accessible state allows non-linear growth of fibers.
+    - a `forE`restricts growth to linearity, and there only one fiber can be spawn at a time. This is counter-thetical to the program requirements that 3 fibers with indenpendent predicates must be spawned concurrently.
+--}
 
 {--
   NOTE:
@@ -78,7 +83,6 @@ liftAfftoFiberM = lift <<< lift
 delayRandom :: Aff Number
 delayRandom = delay (Milliseconds 1000.0) *> affRandom
 
--- | publish/broadcast fiber
 randomGenerator :: String -> (Number -> Boolean) -> FiberM Unit
 randomGenerator predLabel pred = do
   { count } <- get
@@ -93,6 +97,7 @@ randomGenerator predLabel pred = do
      modify_ _ {count = count - 1}
      randomGenerator predLabel pred
 
+-- | publish/broadcast fiber
 -- | tests the effect of module Ch23b
 test :: Effect Unit
 test = launchAff_ do
