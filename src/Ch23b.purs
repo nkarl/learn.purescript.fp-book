@@ -25,31 +25,27 @@ type Reader = { bus :: StrBus }
 -- the program's state, contains the count.
 type State  = { count :: Int }
 {--
-  NOTE: can it be replaced with forE instead?
-    - a `forE` would work, because the control because the count is modified by each fiber spawn. Leaving the count in a universally accessible state allows non-linear growth of fibers.
-    - a `forE`restricts growth to linearity, and there only one fiber can be spawn at a time. This is counter-thetical to the program requirements that 3 fibers with indenpendent predicates must be spawned concurrently.
+  NOTE: can it be replaced with `forE` instead?
+    - `forE` would NOT work, because `count` is modified on each fiber spawning. Leaving `count` in a globally accessible state allows non-linear growth of fibers.
+    - `forE`restricts growth to linearity; only one fiber can be spawn at a time. This is counter-thetical to the program requirements.
+        - 3 fibers with indenpendent predicates must be spawned concurrently.
+    - in other words, `count` is controlled by the spawning in of fibers, and is not a linear iterator.
 --}
 
-{--
-  NOTE:
-    - each fiber is composed as a stack of Reader $ State $ Aff
-     FiberM a :: ReaderT r      m                 a
---}
+-- each fiber is composed as a stack of Reader $ State $ Aff
+--  FiberM a :: ReaderT r      m                  a
 type FiberM a = ReaderT Reader (StateT State Aff) a
 
 {--
-  NOTE: CONSTRUCTS
+  NOTE: ACTIONS
 --}
 
-{--
-  - Instead of using callbacks, we use `liftEffect` and thus reduce LOC
---}
 --Cb      :: (Either Error a -> Effect Unit)
 --makeAff ::  Cb a -> Effect Canceler -> Aff a
 -- | a random number lifted into Aff.
 affRandom :: Aff Number
 affRandom =
-  liftEffect random
+  liftEffect random -- we replace callbacks with `liftEffect` and thus reduce LOC
   --makeAff \cb -> do
     --n <- random
     --cb $ Right n
@@ -57,16 +53,20 @@ affRandom =
 
 {--
   - how to run something inside a fiber?
-    - we look at the definition of `FiberM`.
-  - given an input `FiberM`, we produce some output wrapped in an `Aff`.
+    - "running" means that given an input `FiberM`, we produce some output wrapped in an `Aff`.
+    - we look at the definition of `FiberM`, ie our monad stack.
+      - ReaderT is outermost, then StateT and finally Aff a.
+      - we don't need anything return from Aff, so we return a `Unit` wrapped by Aff.
 --}
-runFiberM :: BusRW String -> FiberM Unit -> Aff Unit -- (Tuple Unit State)
-runFiberM bus = 
-  void <<< forkAff
-    -- runReaderT :: ReaderT r m a -> r -> m a
-    <<< flip runReaderT { bus }       -- flip to take `r` first and `ReaderT r m a` later
+-- | takes a BusRW and returns a fibric function that will process later.
+runFiberM :: BusRW String -> (FiberM Unit -> Aff Unit) -- (Tuple Unit State)
+runFiberM bus =
+  void -- coerce the polymorphic type `a` to Unit
+    <<< forkAff -- fork a new fiber for this call
     -- runStateT  :: StateT  s m a -> s -> m a
-    >>> flip runStateT  { count: 10 } -- flip to take `s` first and `StateT s m a` later
+    <<< flip runStateT  { count: 10 } -- flip to take `s` first and `StateT s m a` later, partial
+    -- runReaderT :: ReaderT r m a -> r -> m a
+    <<< flip runReaderT { bus }       -- flip to take `r` first and `ReaderT r m a` later, partial
 
 -- | subscribe fiber
 logger :: FiberM Unit
@@ -83,6 +83,7 @@ liftAfftoFiberM = lift <<< lift
 delayRandom :: Aff Number
 delayRandom = delay (Milliseconds 1000.0) *> affRandom
 
+-- | publish/broadcast fiber
 randomGenerator :: String -> (Number -> Boolean) -> FiberM Unit
 randomGenerator predLabel pred = do
   { count } <- get
@@ -97,7 +98,6 @@ randomGenerator predLabel pred = do
      modify_ _ {count = count - 1}
      randomGenerator predLabel pred
 
--- | publish/broadcast fiber
 -- | tests the effect of module Ch23b
 test :: Effect Unit
 test = launchAff_ do
