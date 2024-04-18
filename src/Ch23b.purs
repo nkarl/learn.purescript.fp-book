@@ -27,9 +27,10 @@ type State  = { count :: Int }
 {--
   NOTE: can it be replaced with `forE` instead?
     - `forE` would NOT work, because `count` is modified on each fiber spawning. Leaving `count` in a globally accessible state allows non-linear growth of fibers.
-    - `forE`restricts growth to linearity; only one fiber can be spawn at a time. This is counter-thetical to the program requirements.
-        - 3 fibers with indenpendent predicates must be spawned concurrently.
-    - in other words, `count` is controlled by the spawning in of fibers, and is not a linear iterator.
+    - `forE`restricts fiber spawning to linear growth; only one fiber can be spawn at a time.
+        - This is fine if there is only one predicate. However,
+        - we need to spawn 3 fibers with indenpendent predicates concurrently.
+        - in other words, `count` needs to float so that fibers can spawn; it cannot be a linear iterator a la `forE` in this case.
 --}
 
 -- each fiber is composed as a stack of Reader $ State $ Aff
