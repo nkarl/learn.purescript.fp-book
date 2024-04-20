@@ -58,7 +58,9 @@ instance Bind (Action e) where
   bind (Action px) f =
     Action \s -> do
       Tuple s' x <- px s
-      f x # \(Action f') -> f' s'
+      --f x # \(Action f') -> f' s'
+      let exec = \(Action f') -> f' s'
+      exec $ f x
 
 -- monad
 instance Monad (Action e)
