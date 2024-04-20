@@ -5,11 +5,11 @@ import Prelude
 import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
 import Control.Monad.State.Trans (StateT, runStateT)
 import Control.Monad.Trans.Class (lift)
-import Data.Array ((..))
 import Effect (Effect)
 import Effect.Aff (Aff, forkAff, launchAff_)
 import Effect.Aff.Bus (BusRW)
 import Effect.Aff.Bus as Bus
+import Effect.Aff.Class (liftAff)
 import Effect.Class as Effect.Class
 import Effect.Class.Console (log)
 import Effect.Random (random)
@@ -37,52 +37,61 @@ import Effect.Random (random)
     4. [ ] publish to a Bus.
     5. [ ] subscribe to a Bus.
 --}
-
 {-- TYPES & ALIASES --}
+type Bus
+  = BusRW String
 
-type Bus      = BusRW String
+type Reader
+  = { bus :: Bus }
 
-type Reader   = { bus :: Bus }
-
-type State    = { count :: Int }
+type State
+  = { count :: Int }
 
 -- Aff Unit at the core
-
 --   MonadStack a :: trans  r       m                 a
-type MonadStack a = ReaderT Reader (StateT State Aff) a
+type MonadStack a
+  = ReaderT Reader (StateT State Aff) a
 
 {-- FUNCTIONS --}
-
--- | creates a random value wrapped in Aff
+{--
+  | creates a random value wrapped in Aff.
+  |
+  | NOTE: I guess my confusion here is I don't know when to use lift vs liftEffect.
+  | - lift is usually part of a transformer API (ie a monad stack).
+  |   - the action is implemented for each layer in the stack (not counting Effect and Aff).
+  | - on the other hand, liftEffect is more specific. It is constrained by the MonadEffect typeclass.
+  |   - liftEffect transforms some Effect a to any monad m in the stack.
+    - liftAff (instance of the MonadAff typeclass) transforms some Aff a to any monad m in the stack.
+    - in other words, Effect and Aff are given special treat because of how low-leveled they are.
+--}
 affRandom :: Aff Number
 affRandom = Effect.Class.liftEffect random -- lift types `Number` from Effect to Aff.
--- I guess my confusion here is why I can't use `lift`.
 
-
-runMonadStack :: BusRW String -> (MonadStack Unit -> Aff Unit)-- (Tuple Unit State))
+runMonadStack :: BusRW String -> (MonadStack Unit -> Aff Unit) -- (Tuple Unit State))
 runMonadStack bus =
   void
-  <<< forkAff
-  <<< flip runStateT {count: 10}
-  <<< flip runReaderT { bus }
+    <<< forkAff
+    <<< flip runStateT { count: 10 }
+    <<< flip runReaderT { bus }
 
-logger :: {- Aff -} MonadStack Unit
+logger ::  {- Aff -} MonadStack Unit
 logger = do
   { bus } <- ask
-  s <- lift $ lift $ Bus.read bus
+  s <- liftAff $ Bus.read bus -- Bus.read runs in Aff, but we are supposed to run in a MonadStack.
   log $ "Logger: " <> s
-  pure unit
+
 -- `liftEffect` is different from `lift`. liftEffect lift from Effect to Aff.
 -- On the other hand, lift pulls the lower layer to the upper layer, one layer at a time.
-
 randomGenerator :: (Number -> Boolean) -> {- Aff -} MonadStack Unit
 randomGenerator predicate = pure unit
 
 test :: Effect Unit
-test = launchAff_ do
-  bus <- Bus.make
-  let forkFiber = runMonadStack bus
-  forkFiber $ logger
-  forkFiber $ randomGenerator (_ > 0.5)
-  forkFiber $ randomGenerator (_ < 0.5)
-  forkFiber $ randomGenerator (_ > 0.1)
+test =
+  launchAff_ do
+    bus <- Bus.make
+    let
+      forkFiber = runMonadStack bus
+    forkFiber $ logger
+    forkFiber $ randomGenerator (_ > 0.5)
+    forkFiber $ randomGenerator (_ < 0.5)
+    forkFiber $ randomGenerator (_ > 0.1)
