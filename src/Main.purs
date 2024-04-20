@@ -17,11 +17,12 @@ import Effect (Effect)
 --import Reader.Monadic01 as ReaderMonad
 --import Ch23a as Ch23a
 --import TickTock.Rep05 as TickTock.Rep05
-import Ch23b as Ch23b
+--import Ch23b as Ch23b
 --import EchoServer.Ch25a as EchoServer.Ch25a
 --import FFI.JoinPath as FFI.JoinPath
 --import RNG.RandomNumber01 as RandomNumber01
-import RNG.RandomNumber02 as RandomNumber02
+--import RNG.RandomNumber02 as RandomNumber02
+import RNG.RandomNumber03 as RandomNumber03
 
 main :: Effect Unit
 main = do
@@ -42,5 +43,4 @@ main = do
   --Ch23b.test
   --EchoServer.Ch25a.test
   --FFI.JoinPath.test
-  --RandomNumber01.test
-  RandomNumber02.test
+  RandomNumber03.test
