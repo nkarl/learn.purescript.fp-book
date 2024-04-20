@@ -20,7 +20,8 @@ import Effect (Effect)
 import Ch23b as Ch23b
 --import EchoServer.Ch25a as EchoServer.Ch25a
 --import FFI.JoinPath as FFI.JoinPath
-import RNG.RandomNumber01 as RandomNumber01
+--import RNG.RandomNumber01 as RandomNumber01
+import RNG.RandomNumber02 as RandomNumber02
 
 main :: Effect Unit
 main = do
@@ -41,4 +42,5 @@ main = do
   --Ch23b.test
   --EchoServer.Ch25a.test
   --FFI.JoinPath.test
-  RandomNumber01.test
+  --RandomNumber01.test
+  RandomNumber02.test

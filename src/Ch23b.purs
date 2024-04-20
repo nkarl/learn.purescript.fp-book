@@ -21,8 +21,8 @@ import Effect.Random (random)
 -- | is a Bus that reads and writes strings.
 type StrBus = BusRW String
 -- | could contain more properties, for example env variables.
-type Reader = { bus :: StrBus } 
--- the program's state, contains the count.
+type Reader = { bus :: StrBus }
+-- | the program's state, contains the count.
 type State  = { count :: Int }
 {--
   NOTE: can it be replaced with `forE` instead?
