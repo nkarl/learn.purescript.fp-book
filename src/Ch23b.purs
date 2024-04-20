@@ -112,7 +112,8 @@ test = launchAff_ do
 {--
   NOTE: on `launchAff` and `forkAff`
     launchAff ::   Aff a -> Effect (Fiber a)
-    - this is good for running an Aff in the main Effect, because it takes an `Aff` and (spawns and) returns a fiber inside an `Effect`. - however, what if we are in an `Aff`, and want to create another fiber?
+    - this is good for running an Aff in the main Effect, because it takes an `Aff` and (spawns and) returns a fiber inside an `Effect`.
+      - however, what if we are in an `Aff`, and want to create another fiber?
         - we need `Aff a -> Aff    (Fiber a)`
     forkAff   ::   Aff a -> Aff    (Fiber a)
     forkAff lets us fork another fiber inside an Aff.
