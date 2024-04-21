@@ -4,7 +4,6 @@ import Prelude
 
 import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
 import Control.Monad.Rec.Class (forever)
-import Data.Foldable (and)
 import Data.Time.Duration (Milliseconds(..))
 import Effect (Effect)
 import Effect.Aff (Aff, delay, forkAff, launchAff_)
@@ -63,9 +62,9 @@ type Reader = { bus :: Bus }
     Thus, we also need to define a function to run the monad stack.
       - This function will take some MonadStack of type a and some Bus and run it, producing some effect at the end.
     Because
-        - we read and write to the bus, and
+        - we read and write to the bus we don't really care about other effects, and
         - we don't need special conditions to terminate the program,
-    we don't actually need to retain any Effect value.
+    we conclude that we don't actually need to retain any Effect value.
         - Thus we constrain the polymorphic type a to Unit.
 --}
 
