@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
 import Control.Monad.Rec.Class (forever)
+import Data.Foldable (and)
 import Data.Time.Duration (Milliseconds(..))
 import Effect (Effect)
 import Effect.Aff (Aff, delay, forkAff, launchAff_)
@@ -58,9 +59,13 @@ type Reader = { bus :: Bus }
     We have 4 fibers in total: 3 for publishers, and 1 for subscriber.
       - each publisher fiber will be forked from Aff, and be given a condition.
       - the subscriber will also be forked from Aff.
-    We need a function to run the monad stack.
+    Each fiber starts with a stub that runs the monad stack.
+    Thus, we also need to define a function to run the monad stack.
       - This function will take some MonadStack of type a and some Bus and run it, producing some effect at the end.
-      - Because we read and write to the bus, we don't actually need to retain any Effect value.
+    Because
+        - we read and write to the bus, and
+        - we don't need special conditions to terminate the program,
+    we don't actually need to retain any Effect value.
         - Thus we constrain the polymorphic type a to Unit.
 --}
 
