@@ -1,0 +1,3 @@
+[submodule "fullstack"]
+	path = fullstack
+	url = https://github.com/nkarl/purescript.fullstack

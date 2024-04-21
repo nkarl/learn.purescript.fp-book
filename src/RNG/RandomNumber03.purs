@@ -81,15 +81,15 @@ runMonadStack { bus } =
 
 subscribe :: MonadStack Unit
 subscribe = forever do
-  { bus } <- ask
-  s       <- liftAff $ Bus.read bus
+  { bus } :: Reader <- ask
+  s       :: String <- liftAff $ Bus.read bus
   log $ "Logger: " <> s
 
 publish :: String -> (Number -> Boolean) -> MonadStack Unit
 publish label predicate = forever do
-  { bus } <- ask
+  { bus } :: Reader <- ask
   liftAff do
-    n <- delayGenerate
+    n :: Number <- delayGenerate
     let output = label <> show n
     when (predicate n) $ Bus.write output bus
 
@@ -108,7 +108,7 @@ delayGenerate = wait *> generateRandom
 
 test :: Effect Unit
 test = launchAff_ do
-  bus <- Bus.make
+  bus :: Bus <- Bus.make
   let fork = runMonadStack { bus }
   fork $ subscribe
   fork $ flip publish (_ > 0.5) " > 0.5\t\t"
