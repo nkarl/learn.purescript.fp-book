@@ -10,6 +10,7 @@ import Effect (Effect)
 import Effect.Aff (Aff, Milliseconds(..), delay, forkAff, launchAff_)
 import Effect.Aff.Bus (BusRW)
 import Effect.Aff.Bus as Bus
+import Effect.Aff.Class (liftAff)
 import Effect.Class (liftEffect)
 import Effect.Class.Console (log)
 import Effect.Random (random)
@@ -79,7 +80,7 @@ logger = forever do
 
 -- | factored out
 liftAfftoFiberM :: Aff ~> FiberMS
-liftAfftoFiberM = lift <<< lift
+liftAfftoFiberM = liftAff -- lift <<< lift
 
 -- | the desired randomized value wrapped in Aff.
 delayRandom :: Aff Number

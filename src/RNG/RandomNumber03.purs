@@ -51,7 +51,7 @@ type Bus = BusRW String
 
 type MonadStack a = ReaderT Reader (Aff) a
 
-type Reader = { bus :: Bus }
+type Reader = Bus
 
 {--
   NOTE: Next, we model our async fibers.
@@ -69,10 +69,10 @@ type Reader = { bus :: Bus }
 --}
 
 runMonadStack :: Reader -> (MonadStack Unit -> Aff Unit)
-runMonadStack { bus } =
+runMonadStack bus =
   void
     <<< forkAff
-    <<< flip runReaderT { bus }
+    <<< flip runReaderT bus
 
 
 {--
@@ -81,13 +81,13 @@ runMonadStack { bus } =
 
 subscribe :: MonadStack Unit
 subscribe = forever do
-  { bus } :: Reader <- ask
-  s       :: String <- liftAff $ Bus.read bus
+  bus :: Reader <- ask
+  s   :: String <- liftAff $ Bus.read bus
   log $ "Logger: " <> s
 
 publish :: String -> (Number -> Boolean) -> MonadStack Unit
 publish label predicate = forever do
-  { bus } :: Reader <- ask
+  bus :: Reader <- ask
   liftAff do
     n :: Number <- delayGenerate
     let output = label <> show n
@@ -109,7 +109,7 @@ delayGenerate = wait *> generateRandom
 test :: Effect Unit
 test = launchAff_ do
   bus :: Bus <- Bus.make
-  let fork = runMonadStack { bus }
+  let fork = runMonadStack bus
   fork $ subscribe
   fork $ flip publish (_ > 0.5) " > 0.5\t\t"
   fork $ flip publish (_ < 0.5) " < 0.5\t\t"
