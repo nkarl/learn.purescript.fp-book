@@ -1,7 +1,6 @@
 module RNG.RandomNumber02 where
 
 import Prelude
-
 import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
 import Control.Monad.State.Trans (StateT, get, modify_, runStateT)
 import Data.Time.Duration (Milliseconds(..))
@@ -23,7 +22,6 @@ import Effect.Random (random)
     - greater than 0.1
   - the program will output these values on the console.
 --}
-
 {--
   PROGRAM SPECS:
   - This is a good use case for the publisher-subscriber model, ie async effects.
@@ -39,32 +37,35 @@ import Effect.Random (random)
   - We compose a MonadStack with Effect $ Aff $ State $ Reader in order run the computation stack.
   - We wraps the function that generates a new float value to slow it down by 500 ms.
 --}
-
 -- | the data bus; has Read-Write capabilities. Accessed by both the 3 publishers and the lone subscriber.
-type Bus    = BusRW String
+type Bus
+  = BusRW String
 
 -- | a type alias for the data-bus.
-type Reader = { bus :: Bus }
+type Reader
+  = { bus :: Bus }
 
 -- | a type alias for the global count down.
-type State  = { count :: Int }
+type State
+  = { count :: Int }
 
 -- | our program's monad stack.
-type MonadStack a = ReaderT Reader (StateT State Aff) a
+type MonadStack a
+  = ReaderT Reader (StateT State Aff) a
 
 -- | the function to kick start the monad stack.
 runMonadStack :: BusRW String -> (MonadStack Unit -> Aff Unit)
 runMonadStack bus =
   void
     <<< forkAff
-    <<< flip runStateT { count : 10 }
+    <<< flip runStateT { count: 10 }
     <<< flip runReaderT { bus }
 
 -- | the subscribe fiber.
 subcribe :: MonadStack Unit
 subcribe = do
   { bus } <- ask
-  s       <- liftAff $ Bus.read bus
+  s <- liftAff $ Bus.read bus
   log $ "Logger: " <> s
   subcribe
 
@@ -76,25 +77,29 @@ publish predicate = do
     { bus } <- ask
     liftAff do
       n <- delayRandom
-      let output = show n
+      let
+        output = show n
       when (predicate n) $ Bus.write output bus
     modify_ _ { count = count - 1 }
     publish predicate
 
 delayRandom :: Aff Number
 delayRandom = wait *> generateRandom
-  where wait = delay (Milliseconds 500.0) -- combines two functors `f a` and `f b`, keeping only result of `f b`.
+  where
+  wait = delay (Milliseconds 500.0) -- combines two functors `f a` and `f b`, keeping only result of `f b`.
 
 generateRandom :: Aff Number
 generateRandom = liftEffect random
 
 test :: Effect Unit
-test = launchAff_ do
-  bus <- Bus.make
-  let
+test =
+  launchAff_ do
+    bus <- Bus.make
+    let
       forkFiber = runMonadStack bus
+
       logger = forkFiber $ subcribe
-  logger
-  forkFiber $ publish (_ > 0.5)
-  forkFiber $ publish (_ < 0.5)
-  forkFiber $ publish (_ > 0.1)
+    logger
+    forkFiber $ publish (_ > 0.5)
+    forkFiber $ publish (_ < 0.5)
+    forkFiber $ publish (_ > 0.1)

@@ -46,7 +46,6 @@ unwrap (Ctx f) = f
 {--
   DEFINE APPLICATIVE FUNCTOR INSTANCES
 --}
-
 -- f :: State a -> State b
 instance functorCtx :: Functor (Ctx e) where
   --map :: forall a b. (a -> b) -> (Ctx e) a -> (Ctx e) b
@@ -54,25 +53,25 @@ instance functorCtx :: Functor (Ctx e) where
     Ctx \s ->
       (map f) {- `map` instance of functorTuple, which partialy takes `f` -}
         <$> (cx s) {- `<$>` instance of functorEither -}
-  --map f (Ctx cx) = Ctx \s -> do
-     --Tuple s' x <- cx s
-     --pure $ Tuple s' $ f x
 
+--map f (Ctx cx) = Ctx \s -> do
+--Tuple s' x <- cx s
+--pure $ Tuple s' $ f x
 --cf      :: String -> Either error {- or -} State (a -> b)
 --cf s    ::           Either error          State (a -> b)
 --cx      :: String -> Either error {- or -} State  a
 --cx s'1  ::           Either error          State  a
 instance applyCtx :: Apply (Ctx e) where
   --apply :: forall a b. (Ctx e) (a -> b) -> (Ctx e) a -> (Ctx e) b
-  apply (Ctx cf) (Ctx cx) =
-    Ctx \s -> do
-       Tuple s' f <- cf s
-       (map f) <$> (cx s')
-    --Ctx \s -> case c'f s of
-      --Left error -> Left error
-      --Right (Tuple s'1 f) -> case c'x s'1 of
-        --Left error -> Left error
-        --Right (Tuple s'2 x) -> Right (Tuple s'2 (f x))
+  apply (Ctx ff) (Ctx fx) =
+    --Ctx \s -> do
+    --Tuple s' f <- cf s
+    --(map f) <$> (cx s')
+    Ctx \s -> case ff s of
+      Left error -> Left error
+      Right (Tuple s' f) -> case fx s' of
+        Left error -> Left error
+        Right (Tuple s'' x) -> Right (Tuple s'' (f x))
 
 instance applicativeCtx :: Applicative (Ctx e) where
   --pure :: forall a. a -> (Ctx e) a
@@ -106,5 +105,6 @@ test = do
     $ show do
         let
           x = "ABC"
+
           y = unwrap' take1char $ x
         y

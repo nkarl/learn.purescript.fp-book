@@ -1,7 +1,6 @@
 module Parser.Monadic01 where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
@@ -124,6 +123,7 @@ test = do
     $ show do
         let
           x = "ABC"
+
           y = (unwrap' take1char_) $ x
         (y)
   log $ show $ (unwrap' take3chars' $ "ABC")

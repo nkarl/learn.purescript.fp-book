@@ -1,7 +1,6 @@
 module CSV.Rep01 where
 
 import Prelude
-
 import Data.Generic.Rep (class Generic)
 import Data.Int (fromString)
 import Data.Maybe (Maybe(..))
@@ -15,31 +14,35 @@ import Effect.Class.Console (log)
   Data : a CSV line, containing comma-separated data about a person.
   Model: we want to convert this to a product type.
 --}
-
 -- NOTE: a CSV line/tensor: Person <name,age,occupation>
 newtype CSV
   = CSV String
 
-derive         instance newtypeCSV :: Newtype CSV _
-derive newtype instance      eqCSV :: Eq      CSV
-derive newtype instance    showCSV :: Show    CSV
+derive instance newtypeCSV :: Newtype CSV _
+
+derive newtype instance eqCSV :: Eq CSV
+
+derive newtype instance showCSV :: Show CSV
 
 -- NOTE: product typed data for a person
 data Person
   = Person
-    { name       :: Name
-    , age        :: Int
+    { name :: Name
+    , age :: Int
     , occupation :: Occupation
     }
 
 derive instance eqPerson :: Eq Person
 
 -- NOTE: newtype wrapper for Person.name to fix the double quote wrapped string problem.
-newtype Name = Name String
+newtype Name
+  = Name String
 
-derive         instance newtypeName :: Newtype Name _
-derive newtype instance      eqName :: Eq      Name
-derive         instance genericName :: Generic Name _
+derive instance newtypeName :: Newtype Name _
+
+derive newtype instance eqName :: Eq Name
+
+derive instance genericName :: Generic Name _
 
 instance showName :: Show Name where
   show (Name name) = name
@@ -51,7 +54,8 @@ data Occupation
   | Lawyer
   | Unemployed
 
-derive instance      eqOccupation :: Eq      Occupation
+derive instance eqOccupation :: Eq Occupation
+
 derive instance genericOccupation :: Generic Occupation _
 
 instance showOccupation :: Show Occupation where
@@ -62,48 +66,48 @@ class ToCSV a where
   toCSV :: a -> CSV
 
 instance toCSVPerson :: ToCSV Person where
-  toCSV ( Person { name, age, occupation } ) =
-    CSV ( show name <> "," <> show age <> "," <> show occupation )
+  toCSV (Person { name, age, occupation }) = CSV (show name <> "," <> show age <> "," <> show occupation)
 
 class FromCSV a where
   fromCSV :: CSV -> Maybe a
 
 toOccupation :: String -> Maybe Occupation
 toOccupation = case _ of
-  "Doctor"     -> Just Doctor
-  "Dentist"    -> Just Dentist
-  "Lawyer"     -> Just Lawyer
+  "Doctor" -> Just Doctor
+  "Dentist" -> Just Dentist
+  "Lawyer" -> Just Lawyer
   "Unemployed" -> Just Unemployed
-  _            -> Nothing
+  _ -> Nothing
 
 instance fromCSVPerson :: FromCSV Person where
   fromCSV (CSV string) = do
-     let  line = split (Pattern ",") string
-     case line of
-        [ name, age, occupation ]
-          -> do
-                age'        <- fromString age
-                occupation' <- toOccupation occupation
-                pure
-                  $ Person
-                      { name: Name name
-                      , age : age'
-                      , occupation: occupation'
-                      }
-        _ -> Nothing
+    let
+      line = split (Pattern ",") string
+    case line of
+      [ name, age, occupation ] -> do
+        age' <- fromString age
+        occupation' <- toOccupation occupation
+        pure
+          $ Person
+              { name: Name name
+              , age: age'
+              , occupation: occupation'
+              }
+      _ -> Nothing
 
 -- NOTE: module's test
 test :: Effect Unit
 test = do
   let
-    line   = "Sue Smith,23,Doctor"
+    line = "Sue Smith,23,Doctor"
+
     person =
       Person
-        { name       : Name "Sue Smith"
-        , age        : 23
-        , occupation : Doctor
+        { name: Name "Sue Smith"
+        , age: 23
+        , occupation: Doctor
         }
   log $ show $ toCSV person
   log $ show $ toCSV person == CSV line
-  log $ show $ Just person  == (fromCSV        $ CSV     line)
-  log $ show $ Just person  == (toCSV   person # fromCSV     )
+  log $ show $ Just person == (fromCSV $ CSV line)
+  log $ show $ Just person == (toCSV person # fromCSV)

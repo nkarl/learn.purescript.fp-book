@@ -1,9 +1,7 @@
 module Main where
 
 import Prelude
-
 import Effect (Effect)
-
 --import Ch5 as Ch5
 --import Ch6 as Ch6
 --import Ch7a as Ch7a
@@ -22,7 +20,8 @@ import Effect (Effect)
 --import FFI.JoinPath as FFI.JoinPath
 --import RNG.RandomNumber01 as RandomNumber01
 --import RNG.RandomNumber02 as RandomNumber02
-import RNG.RandomNumber03 as RandomNumber03
+--import RNG.RandomNumber03 as RandomNumber03
+import Foldable.Foldable as Foldable.Foldable
 
 main :: Effect Unit
 main = do
@@ -43,4 +42,5 @@ main = do
   --Ch23b.test
   --EchoServer.Ch25a.test
   --FFI.JoinPath.test
-  RandomNumber03.test
+  --RandomNumber03.test
+  Foldable.Foldable.test

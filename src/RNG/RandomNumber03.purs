@@ -1,7 +1,6 @@
 module RNG.RandomNumber03 where
 
 import Prelude
-
 import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
 import Control.Monad.Rec.Class (forever)
 import Data.Time.Duration (Milliseconds(..))
@@ -22,20 +21,18 @@ import Effect.Random (random)
     - less    than 0.5 and greater than 0.1
     The program shall print these values to the console.
 --}
-
 {--
   NOTE: Program Specs.
     This is a good use case for the publisher-subscriber model, which can be written async.
     To use async, we employ `Aff`. Thus, our program's main monad stack starts with Effect <<< Aff.
 --}
-
 {--
   NOTE: We start by modeling the program.
     The subscriber and publishers need to communicate.
     We use a Bus as the data-sharing channel between the two types of fiber.
 --}
-
-type Bus = BusRW String
+type Bus
+  = BusRW String
 
 {--
   NOTE: Next we compose our monad stack.
@@ -48,10 +45,11 @@ type Bus = BusRW String
         - the monad stack becomes (Reader (State (Aff (Effect))))
     We will go with option 1.
 --}
+type MonadStack a
+  = ReaderT Reader (Aff) a
 
-type MonadStack a = ReaderT Reader (Aff) a
-
-type Reader = Bus
+type Reader
+  = Bus
 
 {--
   NOTE: Next, we model our async fibers.
@@ -67,50 +65,52 @@ type Reader = Bus
     we conclude that we don't actually need to retain any Effect value.
         - Thus we constrain the polymorphic type a to Unit.
 --}
-
 runMonadStack :: Reader -> (MonadStack Unit -> Aff Unit)
 runMonadStack bus =
   void
     <<< forkAff
     <<< flip runReaderT bus
 
-
 {--
   NOTE: Next, we model the publisher and subscriber.
 --}
-
 subscribe :: MonadStack Unit
-subscribe = forever do
-  bus :: Reader <- ask
-  s   :: String <- liftAff $ Bus.read bus
-  log $ "Logger: " <> s
+subscribe =
+  forever do
+    bus :: Reader <- ask
+    s :: String <- liftAff $ Bus.read bus
+    log $ "Logger: " <> s
 
 publish :: String -> (Number -> Boolean) -> MonadStack Unit
-publish label predicate = forever do
-  bus :: Reader <- ask
-  liftAff do
-    n :: Number <- delayGenerate
-    let output = label <> show n
-    when (predicate n) $ Bus.write output bus
+publish label predicate =
+  forever do
+    bus :: Reader <- ask
+    liftAff do
+      n :: Number <- delayGenerate
+      let
+        output = label <> show n
+      when (predicate n) $ Bus.write output bus
 
 {--
   NOTE: the publisher is where we need to do the bulk of the work, ie generating a number and checking the predicate.
     We need to model the action of generating a new value.
     We also delay the random generation by 500ms. Otherwise, the console log would get flooded with output.
 --}
-
 generateRandom :: Aff Number
 generateRandom = liftEffect random
 
 delayGenerate :: Aff Number
 delayGenerate = wait *> generateRandom
-  where wait = delay (Milliseconds 500.0)
+  where
+  wait = delay (Milliseconds 500.0)
 
 test :: Effect Unit
-test = launchAff_ do
-  bus :: Bus <- Bus.make
-  let fork = runMonadStack bus
-  fork $ subscribe
-  fork $ flip publish (_ > 0.5) " > 0.5\t\t"
-  fork $ flip publish (_ < 0.5) " < 0.5\t\t"
-  fork $ flip publish (\x -> x > 0.1 && x < 0.5) " > 0.1 && < 0.5\t"
+test =
+  launchAff_ do
+    bus :: Bus <- Bus.make
+    let
+      fork = runMonadStack bus
+    fork $ subscribe
+    fork $ flip publish (_ > 0.5) " > 0.5\t\t"
+    fork $ flip publish (_ < 0.5) " < 0.5\t\t"
+    fork $ flip publish (\x -> x > 0.1 && x < 0.5) " > 0.1 && < 0.5\t"

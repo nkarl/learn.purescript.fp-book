@@ -1,7 +1,6 @@
 module TickTock.Rep05 where
 
 import Prelude
-
 import Effect (Effect)
 import Effect.Aff (Aff, Milliseconds(..), delay, error, forkAff, joinFiber, killFiber, launchAff_)
 import Effect.Aff.AVar (AVar)
@@ -52,8 +51,8 @@ test =
   launchAff_ do
     clock <- AVar.empty
     AVar.put TICK clock
-    fiberClock <- forkAff $ run      clock
-    fiberBomb  <- forkAff $ setBomb  clock 3
+    fiberClock <- forkAff $ run clock
+    fiberBomb <- forkAff $ setBomb clock 3
     -- join the bomb fiber once it has run its course, and then kill the clock.
     joinFiber fiberBomb
     killFiber (error "Exploded") fiberClock -- stops ticking the clock when the bomb has exploded.

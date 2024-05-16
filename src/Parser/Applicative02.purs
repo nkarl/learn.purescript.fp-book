@@ -16,36 +16,54 @@ type State a
 
 -- | An Action.
 type Action err a
-  = Failure err => String -> Either err (State a)
+  = Failable err => String -> Either err (State a)
 
 -- | Some State error. Produced by some unsuccessful action.
-class Failure (err :: Type) where
+class Failable (err :: Type) where
   eof :: err
 
 -- | A Context, which wraps an Action.
-newtype Ctx err a
-  = Ctx (Action err a)
+newtype Process err a
+  = Process (Action err a)
 
 {-- DERIVE INSTANCES --}
-data ErrorEOF
+data Error
   = EOF
+
+derive instance genericError :: Generic Error _
+
+instance showErrorEOF :: Show (Error) where
+  show = genericShow
 
 --f     :: Tuple
 --cx    :: String -> Either err (State a)
 --cx s  ::           Either err (State a)
-instance functorCtx :: Functor (Ctx e) where
-  -- map :: (a -> b) -> f a -> f b
-  map f (Ctx cx) = Ctx \s -> do
-     let
-         -- g :: (State a -> State b)
-        g = map f -- `map` instance of Data.Tuple partially takes `f`
-        x = cx s  -- x :: Either err (State a)
-     g <$> x -- `<$>` instance of Data.Either combining `g` and `x`
+instance functorProcess :: Functor (Process e) where
+  map f (Process px) =  --Process \s -> do --let --g = map f -- `map` instance of Data.Tuple partially takes `f` --x = cx s  -- x :: Either err (State a) --g <$> x -- `<$>` instance of Data.Either combining `g` and `x`
+    Process $ h <<< px
+    where
+    h = map g
 
-derive instance genericErrorEOF :: Generic ErrorEOF _
+    g = map f
 
-instance showErrorEOF :: Show (ErrorEOF) where
-  show = genericShow
+instance applyProcess :: Apply (Process e) where
+  apply (Process pf) (Process px) =
+    Process \s -> do
+      Tuple s' f <- pf s
+      Tuple s'' x <- px s'
+      pure $ Tuple s'' $ f x
+
+instance applicativeProcess :: Applicative (Process e) where
+  pure x = Process \s -> Right $ Tuple s x
+
+instance bindProcess :: Bind (Process e) where
+  bind (Process px) f =
+    Process \s -> do
+      Tuple s' x <- px s
+      Process g <- Right $ f x
+      g s'
+
+instance monadProcess :: Monad (Process e)
 
 test :: Effect Unit
 test = do

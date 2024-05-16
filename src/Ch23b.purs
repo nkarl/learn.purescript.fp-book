@@ -1,7 +1,6 @@
 module Ch23b where
 
 import Prelude
-
 import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
 import Control.Monad.Rec.Class (forever)
 import Control.Monad.State.Trans (StateT, get, modify_, runStateT)
@@ -20,11 +19,17 @@ import Effect.Random (random)
 --}
 -- `BusRW :: Bus ( read :: Cap, write :: Cap)` is a row type.
 -- | is a Bus that reads and writes strings.
-type StrBus = BusRW String
+type StrBus
+  = BusRW String
+
 -- | could contain more properties, for example env variables.
-type Reader = { bus :: StrBus }
+type Reader
+  = { bus :: StrBus }
+
 -- | the program's state, contains the count.
-type State  = { count :: Int }
+type State
+  = { count :: Int }
+
 {--
   NOTE: can it be replaced with `forE` instead?
     - `forE` would NOT work, because `count` is modified on each fiber spawning.
@@ -34,26 +39,24 @@ type State  = { count :: Int }
         - we need to spawn 3 fibers with indenpendent predicates concurrently.
     - in other words, `count` needs to "float" so that fibers can spawn; it cannot be a linear iterator a la `forE` in this case.
 --}
-
 -- each fiber is composed as a stack of Reader $ State $ Aff
 --  FiberMS a :: ReaderT r      m                    a
-type FiberMS a = ReaderT Reader (StateT State (Aff)) a
+type FiberMS a
+  = ReaderT Reader (StateT State (Aff)) a
 
 {--
   NOTE: ACTIONS
 --}
-
 --Callback :: (Either Error a -> Effect Unit)
 --makeAff  :: Callback a -> Effect Canceler -> Aff a
 -- | a random number lifted into Aff.
 affRandom :: Aff Number
-affRandom =
-  liftEffect random -- we replace callbacks with `liftEffect` and thus reduce LOC
-  --makeAff \cb -> do
-    --n <- random
-    --cb $ Right n
-    --pure nonCanceler
+affRandom = liftEffect random -- we replace callbacks with `liftEffect` and thus reduce LOC
 
+--makeAff \cb -> do
+--n <- random
+--cb $ Right n
+--pure nonCanceler
 {--
   - how to run something inside a fiber?
     - "running" means that given an input `FiberMS`, we produce some output wrapped in an `Aff`.
@@ -67,16 +70,19 @@ runFiberM bus =
   void -- coerce the polymorphic type `a` to Unit
     <<< forkAff -- fork a new fiber for this call
     -- runStateT  :: (StateT  s m a) -> s -> m a
-    <<< flip runStateT  { count: 10 } -- flip to take `s` first and `StateT s m a` later, partial
+    
+    <<< flip runStateT { count: 10 } -- flip to take `s` first and `StateT s m a` later, partial
     -- runReaderT :: (ReaderT r m a) -> r -> m a
-    <<< flip runReaderT { bus }       -- flip to take `r` first and `ReaderT r m a` later, partial
+    
+    <<< flip runReaderT { bus } -- flip to take `r` first and `ReaderT r m a` later, partial
 
 -- | subscribe fiber
 logger :: FiberMS Unit
-logger = forever do
-  { bus } <- ask
-  s       <- liftAfftoFiberM $ Bus.read bus
-  log $ "Logger: " <> s
+logger =
+  forever do
+    { bus } <- ask
+    s <- liftAfftoFiberM $ Bus.read bus
+    log $ "Logger: " <> s
 
 -- | factored out
 liftAfftoFiberM :: Aff ~> FiberMS
@@ -91,24 +97,27 @@ randomGenerator :: String -> (Number -> Boolean) -> FiberMS Unit
 randomGenerator predLabel pred = do
   { count } <- get
   unless (count <= 0) do
-     { bus } <- ask
-     liftAfftoFiberM do
-        n <- delayRandom
-        let output = "Found a value that is " <> predLabel <> " (" <> show n <> ")"
-        when (pred n) $ Bus.write output bus
-     --put { count: count - 1 }
-     modify_ _ {count = count - 1}
-     randomGenerator predLabel pred
+    { bus } <- ask
+    liftAfftoFiberM do
+      n <- delayRandom
+      let
+        output = "Found a value that is " <> predLabel <> " (" <> show n <> ")"
+      when (pred n) $ Bus.write output bus
+    --put { count: count - 1 }
+    modify_ _ { count = count - 1 }
+    randomGenerator predLabel pred
 
 -- | tests the effect of module Ch23b
 test :: Effect Unit
-test = launchAff_ do
-  bus <- Bus.make
-  let forkFiberM = runFiberM bus
-  forkFiberM $ logger
-  forkFiberM $ randomGenerator "greater than 0.5\t" (_ > 0.5)
-  forkFiberM $ randomGenerator "less    than 0.5\t" (_ < 0.5)
-  forkFiberM $ randomGenerator "greater than 0.1\t" (_ > 0.1)
+test =
+  launchAff_ do
+    bus <- Bus.make
+    let
+      forkFiberM = runFiberM bus
+    forkFiberM $ logger
+    forkFiberM $ randomGenerator "greater than 0.5\t" (_ > 0.5)
+    forkFiberM $ randomGenerator "less    than 0.5\t" (_ < 0.5)
+    forkFiberM $ randomGenerator "greater than 0.1\t" (_ > 0.1)
 
 {--
   NOTE: on `launchAff` and `forkAff`

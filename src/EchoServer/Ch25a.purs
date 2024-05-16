@@ -8,19 +8,19 @@ import Effect.Class.Console (log)
     NOTE: DATA STRUCTURES
 --}
 type {-- alias --} Personal
-  = { height  :: Number
-    , weight  :: Number
-    , age     :: Int
+  = { height :: Number
+    , weight :: Number
+    , age :: Int
     }
 
 newtype GPA
   = GPA Number
 
-type {-- alias --} Student -- to be sent to the EchoServer
-  = { grade     :: Level
-    , gpa       :: GPA
-    , teacher   :: Teacher
-    , personal  :: Personal
+type {-- alias --} Student  -- to be sent to the EchoServer
+  = { grade :: Level
+    , gpa :: GPA
+    , teacher :: Teacher
+    , personal :: Personal
     }
 
 data Level
@@ -29,11 +29,11 @@ data Level
   | Level Int
   | College Int
 
-type {-- alias --} Teacher -- to be sent to the EchoServer
-  = { levels    :: Array Level
-    , students  :: Int
-    , personal  :: Personal
-    , status    :: ProfessionalStatus
+type {-- alias --} Teacher  -- to be sent to the EchoServer
+  = { levels :: Array Level
+    , students :: Int
+    , personal :: Personal
+    , status :: ProfessionalStatus
     }
 
 data ProfessionalStatus
@@ -45,8 +45,6 @@ data ProfessionalStatus
 {--
     NOTE: Instances
 --}
-
-
 test :: Effect Unit
 test = do
   log $ show "placeholder"

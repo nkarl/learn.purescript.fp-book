@@ -78,14 +78,15 @@ runMonadStack bus =
     <<< flip runReaderT { bus }
 
 logger :: MonadStack {- Aff -} Unit
-logger = forever do
+logger =
+  forever do
     { bus } <- ask
     -- Bus.read runs in Aff, but we need it to run in a MonadStack.
     -- therefore, we use `liftAff` to pull it to the MonadStack layer.
     s <- liftAff $ Bus.read bus
     log $ "Logger: " <> s
-    --logger
 
+--logger
 randomGenerator :: String -> (Number -> Boolean) -> MonadStack Unit
 randomGenerator label pred = do
   { count } <- get
@@ -99,9 +100,9 @@ randomGenerator label pred = do
       when (pred n) $ Bus.write output bus
     modify_ _ { count = count - 1 } -- NOTE: 2nd do-block; DOES terminate the program
     randomGenerator label pred
-  --modify_ _ { count = count - 1 } -- NOTE: 1st do-block; DOES NOT terminate the program
-  --randomGenerator label pred
 
+--modify_ _ { count = count - 1 } -- NOTE: 1st do-block; DOES NOT terminate the program
+--randomGenerator label pred
 test :: Effect Unit
 test =
   launchAff_ do
