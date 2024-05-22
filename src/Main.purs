@@ -21,6 +21,7 @@ import Effect (Effect)
 --import RNG.RandomNumber01 as RandomNumber01
 --import RNG.RandomNumber02 as RandomNumber02
 --import RNG.RandomNumber03 as RandomNumber03
+--import Foldable.FoldableList as Foldable.FoldableList
 import Foldable.Foldable as Foldable.Foldable
 
 main :: Effect Unit
@@ -43,4 +44,5 @@ main = do
   --EchoServer.Ch25a.test
   --FFI.JoinPath.test
   --RandomNumber03.test
+  --Foldable.FoldableList.test
   Foldable.Foldable.test
