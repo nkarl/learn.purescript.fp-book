@@ -113,27 +113,22 @@ test = do
           <.> (unit $ compute) -- this is partial application, not compsition
           <.> (unit $ compute)
       )
-  log $ show
-    $ (Just 10)
-    == ( binding' start
-          >>= unitCompute
-          >>= unitCompute
-      )
   -- JOINING
   log $ show $ expected == joining start
   log $ show $ expected == joining' start
+  log $ show $ (Just 10)
+    == (join
+        <<< map (unit <<< (compute <<< compute)) $ binding' start)
   -- BINDING
   log $ show $ expected == (binding start)
   -- BINDING MANY TIMES
-  log $ show
-    $ (Just 10)
+  log $ show $ (Just 10)
     == ( binding' start
           >>= unitCompute
           >>= unitCompute
       )
   -- DOING
-  log $ show
-    $ (Just 10)
+  log $ show $ (Just 10)
     == do
         x <- binding start
         unit $ compute <<< compute $ x
