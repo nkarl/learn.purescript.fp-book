@@ -66,25 +66,59 @@ instance monadMaybe' :: Monad Maybe'
 
 infixl 1 bind as >>=
 
+infixl 4 apply as <*>
+
+flippedApply = flip apply
+
+infixl 4 flippedApply as <.>
+
 test :: Effect Unit
 test = do
   let
     start = Just 1
+
     expected = Just 4
+
     compute = (_ + 2) <<< (_ + 1)
+
+    unitCompute = unit <<< compute
 
     joining =
       join
         <<< map (unit <<< compute)
+
     joining' =
       join
-        <<< map unit <<< map compute
+        <<< map unit
+        <<< map compute
 
     binding = \x ->
-      x >>= (unit <<< compute)
+      x >>= unitCompute
 
-    binding' = flip bind (unit <<< compute)
-
+    binding' = flip bind unitCompute
+  -- APPLYING
+  log $ show $ (Just 10)
+    == ( (unit $ compute)
+          <*> ( (unit $ compute) -- this is partial application, not composition
+                <*> (binding' start)
+            )
+      )
+  log $ show $ (Just 10)
+    == ( apply (unit $ compute)
+          $ apply (unit $ compute)
+              (binding' start)
+      )
+  log $ show $ (Just 10)
+    == ( binding' start
+          <.> (unit $ compute) -- this is partial application, not compsition
+          <.> (unit $ compute)
+      )
+  log $ show
+    $ (Just 10)
+    == ( binding' start
+          >>= unitCompute
+          >>= unitCompute
+      )
   -- JOINING
   log $ show $ expected == joining start
   log $ show $ expected == joining' start
@@ -94,15 +128,15 @@ test = do
   log $ show
     $ (Just 10)
     == ( binding' start
-          >>= (unit <<< compute)
-          >>= (unit <<< compute)
+          >>= unitCompute
+          >>= unitCompute
       )
   -- DOING
   log $ show
     $ (Just 10)
     == do
-      x <- binding start
-      unit $ compute <<< compute $ x
+        x <- binding start
+        unit $ compute <<< compute $ x
 
 {--
   NOTE: joining and joining' show associative composition
