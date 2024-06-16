@@ -96,7 +96,7 @@ test = do
       x >>= unitCompute
 
     binding' = flip bind unitCompute
-  -- APPLYING
+  -- NOTE: APPLYING MANY TIMES
   log $ show $ (Just 10)
     == ( (unit $ compute)
           <*> ( (unit $ compute) -- this is partial application, not composition
@@ -108,6 +108,7 @@ test = do
           $ apply (unit $ compute)
               (binding' start)
       )
+  -- NOTE: This looks closest to BINDING
   log $ show $ (Just 10)
     == ( binding' start
           <.> (unit $ compute) -- this is partial application, not compsition
@@ -116,22 +117,26 @@ test = do
   -- JOINING
   log $ show $ expected == joining start
   log $ show $ expected == joining' start
+  -- NOTE: JOINING MANY TIMES
   log $ show $ (Just 10)
     == (join
         <<< map (unit <<< (compute <<< compute)) $ binding' start)
   -- BINDING
   log $ show $ expected == (binding start)
-  -- BINDING MANY TIMES
+  -- NOTE: BINDING MANY TIMES
   log $ show $ (Just 10)
     == ( binding' start
           >>= unitCompute
           >>= unitCompute
       )
-  -- DOING
+  -- NOTE: DOING MANY TIMES
   log $ show $ (Just 10)
     == do
         x <- binding start
-        unit $ compute <<< compute $ x
+        let
+            y = compute x
+            z = compute y
+        unit z
 
 {--
   NOTE: joining and joining' show associative composition
