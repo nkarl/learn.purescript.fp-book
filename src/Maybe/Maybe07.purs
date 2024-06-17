@@ -26,18 +26,18 @@ class Functor f where
   map :: forall a b. (a -> b) -> f a -> f b
 
 class
-  Functor p <= Apply p where
-  apply :: forall a b. p (a -> b) -> p a -> p b
+  Functor f <= Apply f where
+  apply :: forall a b. f (a -> b) -> f a -> f b
 
 class
-  Apply p <= Applicative p where
-  unit :: forall a. a -> p a
+  Apply f <= Applicative f where
+  unit :: forall a. a -> f a
 
-class Bind p where
-  bind :: forall a b. p a -> (a -> p b) -> p b
+class Bind m where
+  bind :: forall a b. m a -> (a -> m b) -> m b
 
-class Join p where
-  join :: forall a. p (p a) -> p a
+class Join m where
+  join :: forall a. m (m a) -> m a
 
 class (Applicative m, Bind m, Join m) <= Monad m
 
@@ -66,11 +66,16 @@ instance monadMaybe' :: Monad Maybe'
 
 test :: Effect Unit
 test = do
-  log $ show $ (Just 1)
-  log $ show $ (Just 1) == (Just 1)
-  log $ show $ (Just 2) == ((_ + 1) `map` (Just 1))
-  log $ show $ (Just 2) == (unit (_ + 1) `apply` (Just 1))
-  log $ show $ (Just 4)
+  let
+    x = Just 1
+    y = Just 2
+    z = Just 4
+  log $ show $ x
+  log $ show $ x == (Just 1)
+  log $ show $ y == ((_ + 1) `map` (Just 1))
+  log $ show $ y == (unit (_ + 1) `apply` (Just 1))
+  -- JOINING
+  log $ show $ z
     == ( join
           $ ( unit
                 <<< (_ + 1)
@@ -79,6 +84,7 @@ test = do
               `map`
                 (Just 1)
       )
+  -- BINDING
   log $ show $ (Just 7)
     == (Just 4)
         `bind`
@@ -86,21 +92,23 @@ test = do
               <<< (_ + 1)
               >>> (_ + 2)
           )
+  -- MONAD DO
   log $ show $ (Just 7)
     == ( do
-          x <- Just 1
-          y <- unit $ x + 1
-          z <- unit $ y + 2
-          a <- unit $ z + 3
-          unit a
+          a <- Just 1
+          b <- unit $ a + 1
+          c <- unit $ b + 2
+          d <- unit $ c + 3
+          unit d
       )
+  -- MONAD DO
   log $ show $ (Just 7)
     == ( do
-          x <- Just 1
-          y <- unit $ x + 1
+          a <- Just 1
+          b <- unit $ a + 1
           let
-            z = y + 2
+            c = b + 2
 
-            a = z + 3
-          unit a
+            d = c + 3
+          unit d
       )

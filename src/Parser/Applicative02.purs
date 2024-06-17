@@ -5,8 +5,6 @@ import Effect (Effect)
 import Effect.Console (log)
 import Data.Tuple (Tuple(..))
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.String.CodeUnits (uncons)
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 
@@ -39,8 +37,7 @@ instance showErrorEOF :: Show (Error) where
 --cx    :: String -> Either err (State a)
 --cx s  ::           Either err (State a)
 instance functorProcess :: Functor (Process e) where
-  map f (Process px) =  --Process \s -> do --let --g = map f -- `map` instance of Data.Tuple partially takes `f` --x = cx s  -- x :: Either err (State a) --g <$> x -- `<$>` instance of Data.Either combining `g` and `x`
-    Process $ h <<< px
+  map f (Process px) = Process $ h <<< px
     where
     h = map g
 

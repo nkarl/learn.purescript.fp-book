@@ -1,6 +1,6 @@
 module Main where
 
-import Prelude
+import Prelude (Unit)
 import Effect (Effect)
 --import Ch5 as Ch5
 --import Ch6 as Ch6
@@ -22,7 +22,8 @@ import Effect (Effect)
 --import RNG.RandomNumber02 as RandomNumber02
 --import RNG.RandomNumber03 as RandomNumber03
 --import Foldable.FoldableList as Foldable.FoldableList
-import Foldable.Foldable as Foldable.Foldable
+--import Foldable.Foldable as Foldable.Foldable
+import Maybe.Maybe08 as Maybe.Maybe08
 
 main :: Effect Unit
 main = do
@@ -45,4 +46,5 @@ main = do
   --FFI.JoinPath.test
   --RandomNumber03.test
   --Foldable.FoldableList.test
-  Foldable.Foldable.test
+  --Foldable.Foldable.test
+  Maybe.Maybe08.test

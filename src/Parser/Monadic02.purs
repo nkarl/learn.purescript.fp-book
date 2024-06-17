@@ -10,33 +10,50 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class.Console (log)
 
+{--
+  NOTE: high level view
+    - An `Action` is a compressed `Process` which produces a `State`.
+    - The State is a `Tuple` of `String` and some polymorphic type `a`.
+--}
 {-
   NOTE: input: a string such as "ABC"
 -}
-type {-- alias --} State a
+type State a
   = Tuple String a
 
--- The polymorphic type `e` (the first param of Either) is constrained to those that have an instance of typeclass Failing.
-type {-- alias --} Process e a
-  = String -> Failing e => Either e (State a)
+{--
+  NOTE:
+    - The polymorphic type `e` (the left param of Either)
+      - is _constrained_ to types that implement the typeclass Failure.
+--}
+type Process e a
+  = (Failure e) => String -> Either e (State a)
 
+{--
+  NOTE: an action is a compressed process.
+--}
 newtype Action e a
   = Action (Process e a)
 
--- Error
+-- datatype for Error, a sum type that accounts for at least the EOF possibility.
 data Error
   = EOF
 
-derive instance genericError :: Generic Error _
+derive instance genericErrorType :: Generic Error _
 
-instance showError :: Show Error where
+instance showErrorType :: Show Error where
   show = genericShow
 
--- the polymorphic type `e` is a Type and not a Kind
-class Failing (e :: Type) where
+{--
+  NOTE:
+    - Defining a typeclass `Failure` for some Type `e` (ie first-order Kind)
+    - `e` is an error type whose class of actions includes at least an EOF action.
+      - instance defined below
+--}
+class Failure (e :: Type) where
   eof :: e
 
-instance failingError :: Failing Error where
+instance failingError :: Failure  {- with -} Error where
   eof = EOF
 
 {-
@@ -44,14 +61,19 @@ instance failingError :: Failing Error where
 -}
 -- functor
 instance functorAction :: Functor (Action e) where
-  map f (Action px) = Action \s -> map f <$> px s
+  map f (Action mx) = Action \s -> h $ mx s
+    where
+    h = map g
+
+    g = map f
 
 -- apply
 instance applyAction :: Apply (Action e) where
-  apply (Action pf) (Action px) =
+  apply (Action mf) (Action mx) =
     Action \s -> do
-      Tuple s' f <- pf s
-      map f <$> px s'
+      Tuple s' f <- mf s
+      Tuple s'' x <- mx s'
+      pure $ Tuple s'' (f x)
 
 -- applicative
 instance applicativeAction :: Applicative (Action e) where
@@ -59,13 +81,11 @@ instance applicativeAction :: Applicative (Action e) where
 
 -- bind
 instance bindAction :: Bind (Action e) where
-  bind (Action px) f =
+  bind (Action mx) f =
     Action \s -> do
-      Tuple s' x <- px s
-      --f x # \(Action f') -> f' s'
-      let
-        exec = \(Action f') -> f' s'
-      exec $ f x
+      Tuple s' x <- mx s
+      Action g <- pure $ f x
+      g s'
 
 -- monad
 instance monadAction :: Monad (Action e)
@@ -73,7 +93,7 @@ instance monadAction :: Monad (Action e)
 {-
   NOTE: data: Tuple of remaining string and a string of taken chars
 -}
--- Action e Char :: String -> Failing e => Either e (Tuple String Char)
+-- Action e Char :: String -> Failure e => Either e (Tuple String Char)
 --class TakeOneChar e where
 take1char :: forall e. Action e Char
 --instance TakeOneChar Error where
@@ -91,10 +111,10 @@ take1char =
 --c2 <- take1char
 --pure $ fromCharArray [ c1, c2 ]
 {-- helper --}
-unwrap :: forall e a. (Action e) a -> Process e a
+unwrap :: forall e a. Action e a -> Process e a
 unwrap (Action f) = f
 
-unwrap' :: forall a. (Action Error) a -> (Process Error) a
+unwrap' :: forall a. Action Error a -> Process Error a
 unwrap' = unwrap
 
 -- NOTE: unit test

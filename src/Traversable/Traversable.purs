@@ -1,7 +1,6 @@
 module Traversable.Traversable where
 
 import Prelude
-
 import Effect (Effect)
 import Effect.Class.Console (log)
 
@@ -10,9 +9,13 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldM :: forall a m. Monoid m => (a -> m) -> f a -> m
 
-class (Functor t, Foldable t) <= Traversable t where
-  traverse :: forall a b m. Applicative m => (a -> m b) -> t a -> m (t b) -- (Int -> Maybe Int) -> Array Int -> Maybe (Array Int)
-  sequence :: forall a m. Applicative m => t (m a) -> m (t a)             -- Array (Maybe Int) -> Maybe (Array Int)
+-- t :: Traversable Array, m :: Applicative Maybe
+class
+  (Functor t, Foldable t) <= Traversable t where
+  -- Example: Applicative Maybe => (Int -> Maybe Int) -> Array Int -> Maybe (Array Int)
+  traverse :: forall a b m. Applicative m => (a -> m b) -> t a -> m (t b)
+  -- Example: Applicative Maybe => Array (Maybe Int) -> Maybe (Array Int)
+  sequence :: forall a m. Applicative m => t (m a) -> m (t a)
 
 test :: Effect Unit
 test = do
