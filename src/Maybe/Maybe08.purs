@@ -91,28 +91,28 @@ test = do
 
   -- APPLYING MANY TIMES
   print $ expected == ( unitApply
-                              <*> ( unitApply
-                                    <*> x ) )
+                          <*> ( unitApply
+                                  <*> x ) )
   print $ expected == ( apply unitApply
-                              $ apply unitApply x )
+                          $ apply unitApply x )
   print $ expected == ( x
-                              <.> unitApply
-                              <.> unitApply )   -- NOTE: very similar to BINDING
+                          <.> unitApply
+                                <.> unitApply )   -- NOTE: very similar to BINDING
   -- JOINING MANY TIMES
   print $ expected == ( join
-                              <<< map (unit <<< (compute <<< compute))
-                              $ x )
+                          <<< map (unit <<< compute <<< compute)
+                          $ x )
   -- BINDING MANY TIMES
   print $ expected == ( x
-                              >>= unitCompose
-                              >>= unitCompose ) -- NOTE: similar to flippedApply
+                          >>= unitCompose
+                          >>= unitCompose ) -- NOTE: similar to flippedApply
   -- COMPUTING MANY TIMES INSIDE DO
   print $ expected == do
-                            a <- x
-                            let
-                              b = compute a
-                              c = compute b
-                            unit c
+                        a <- x
+                        let
+                          b = compute a
+                          c = compute b
+                        unit c
 
 {--
   NOTE: joining and joining' show associative composition
