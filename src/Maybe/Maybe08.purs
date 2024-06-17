@@ -1,9 +1,11 @@
 module Maybe.Maybe08 where
 
 import Prelude
+
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
+import Effect.Class (class MonadEffect)
 import Effect.Class.Console (log)
 
 {-- DATA MODEL --}
@@ -11,10 +13,8 @@ data Maybe' a
   = Nothing
   | Just a
 
-derive instance eqMaybe' :: Eq a => Eq (Maybe' a)
-
-derive instance ordMaybe' :: Ord a => Ord (Maybe' a)
-
+derive instance eqMaybe'      :: Eq  a => Eq  (Maybe' a)
+derive instance ordMaybe'     :: Ord a => Ord (Maybe' a)
 derive instance genericMaybe' :: Generic (Maybe' a) _
 
 instance showMaybe' :: Show a => Show (Maybe' a) where
@@ -55,13 +55,16 @@ instance bindMaybe' :: Bind Maybe' where
   bind (Just x) f = f x
 
 instance joinMaybe' :: Join Maybe' where
-  join = (flip $ bind) $ identity
+  join = (flip bind) identity
 
 instance monadMaybe' :: Monad Maybe'
 
 {-- ADDITIONAL SIGNATURES AND ALIASES --}
 flippedApply :: forall a b m. Apply m => m a -> m (a -> b) -> m b
 flippedApply = flip apply
+
+print :: forall a m. MonadEffect m => Show a => a -> m Unit
+print = log <<< show
 
 infixl 1 bind         as >>=
 infixl 4 apply        as <*>
@@ -87,24 +90,24 @@ test = do
   log $ show $ (Just 4) == joining' x
 
   -- APPLYING MANY TIMES
-  log $ show $ expected == ( unitApply
+  print $ expected == ( unitApply
                               <*> ( unitApply
                                     <*> x ) )
-  log $ show $ expected == ( apply unitApply
+  print $ expected == ( apply unitApply
                               $ apply unitApply x )
-  log $ show $ expected == ( x
+  print $ expected == ( x
                               <.> unitApply
                               <.> unitApply )   -- NOTE: very similar to BINDING
   -- JOINING MANY TIMES
-  log $ show $ expected == ( join
+  print $ expected == ( join
                               <<< map (unit <<< (compute <<< compute))
                               $ x )
   -- BINDING MANY TIMES
-  log $ show $ expected == ( x
+  print $ expected == ( x
                               >>= unitCompose
                               >>= unitCompose ) -- NOTE: similar to flippedApply
   -- COMPUTING MANY TIMES INSIDE DO
-  log $ show $ expected == do
+  print $ expected == do
                             a <- x
                             let
                               b = compute a
