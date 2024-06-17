@@ -24,24 +24,19 @@ instance showMaybe' :: Show a => Show (Maybe' a) where
 class Functor m where
   map :: forall a b. (a -> b) -> m a -> m b
 
-class
-  Functor m <= Apply m where
+class Functor m <= Apply m where
   apply :: forall a b. m (a -> b) -> m a -> m b
 
-class
-  Apply m <= Applicative m where
+class Apply m <= Applicative m where
   unit :: forall a. a -> m a
 
-class
-  Applicative m <= Bind m where
+class Applicative m <= Bind m where
   bind :: forall a b. m a -> (a -> m b) -> m b
 
-class
-  Applicative m <= Join m where
+class Applicative m <= Join m where
   join :: forall a. m (m a) -> m a
 
-class
-  Bind m <= Monad m
+class (Join m, Bind m) <= Monad m
 
 {-- DEFINITIONS --}
 instance functorMaybe' :: Functor Maybe' where
@@ -64,79 +59,57 @@ instance joinMaybe' :: Join Maybe' where
 
 instance monadMaybe' :: Monad Maybe'
 
-infixl 1 bind as >>=
-
-infixl 4 apply as <*>
-
+{-- ADDITIONAL SIGNATURES AND ALIASES --}
+flippedApply :: forall a b m. Apply m => m a -> m (a -> b) -> m b
 flippedApply = flip apply
 
+infixl 1 bind         as >>=
+infixl 4 apply        as <*>
 infixl 4 flippedApply as <.>
 
+{-- TEST --}
 test :: Effect Unit
 test = do
   let
-    start = Just 1
+    x           = Just 1
+    expected    = Just 7
+    compute     = (_ + 2) <<< (_ + 1)
+    unitApply   = unit $    compute -- this is partial application of a function
+    unitCompose = unit <<<  compute -- this is function composition
+    joining     = join
+                    <<< map (unit <<< compute)
+    joining'    = join
+                    <<< map unit
+                    <<< map compute
 
-    expected = Just 4
-
-    compute = (_ + 2) <<< (_ + 1)
-
-    unitCompute = unit <<< compute
-
-    joining =
-      join
-        <<< map (unit <<< compute)
-
-    joining' =
-      join
-        <<< map unit
-        <<< map compute
-
-    binding = \x ->
-      x >>= unitCompute
-
-    binding' = flip bind unitCompute
-  -- NOTE: APPLYING MANY TIMES
-  log $ show $ (Just 10)
-    == ( (unit $ compute)
-          <*> ( (unit $ compute) -- this is partial application, not composition
-                <*> (binding' start)
-            )
-      )
-  log $ show $ (Just 10)
-    == ( apply (unit $ compute)
-          $ apply (unit $ compute)
-              (binding' start)
-      )
-  -- NOTE: This looks closest to BINDING
-  log $ show $ (Just 10)
-    == ( binding' start
-          <.> (unit $ compute) -- this is partial application, not compsition
-          <.> (unit $ compute)
-      )
   -- JOINING
-  log $ show $ expected == joining start
-  log $ show $ expected == joining' start
-  -- NOTE: JOINING MANY TIMES
-  log $ show $ (Just 10)
-    == (join
-        <<< map (unit <<< (compute <<< compute)) $ binding' start)
-  -- BINDING
-  log $ show $ expected == (binding start)
-  -- NOTE: BINDING MANY TIMES
-  log $ show $ (Just 10)
-    == ( binding' start
-          >>= unitCompute
-          >>= unitCompute
-      )
-  -- NOTE: DOING MANY TIMES
-  log $ show $ (Just 10)
-    == do
-        x <- binding start
-        let
-            y = compute x
-            z = compute y
-        unit z
+  log $ show $ (Just 4) == joining  x
+  log $ show $ (Just 4) == joining' x
+
+  -- APPLYING MANY TIMES
+  log $ show $ expected == ( unitApply
+                              <*> ( unitApply
+                                    <*> x ) )
+  log $ show $ expected == ( apply unitApply
+                              $ apply unitApply x )
+  log $ show $ expected == ( x
+                              <.> unitApply
+                              <.> unitApply )   -- NOTE: very similar to BINDING
+  -- JOINING MANY TIMES
+  log $ show $ expected == ( join
+                              <<< map (unit <<< (compute <<< compute))
+                              $ x )
+  -- BINDING MANY TIMES
+  log $ show $ expected == ( x
+                              >>= unitCompose
+                              >>= unitCompose ) -- NOTE: similar to flippedApply
+  -- COMPUTING MANY TIMES INSIDE DO
+  log $ show $ expected == do
+                            a <- x
+                            let
+                              b = compute a
+                              c = compute b
+                            unit c
 
 {--
   NOTE: joining and joining' show associative composition
