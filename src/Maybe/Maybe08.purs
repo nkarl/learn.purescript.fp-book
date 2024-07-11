@@ -63,10 +63,14 @@ instance monadMaybe' :: Monad Maybe'
 flippedApply :: forall a b m. Apply m => m a -> m (a -> b) -> m b
 flippedApply = flip apply
 
+flippedBind :: forall m a b. Bind m => (a -> m b) -> m a -> m b
+flippedBind  = flip bind
+
 print :: forall a m. MonadEffect m => Show a => a -> m Unit
 print = log <<< show
 
 infixl 1 bind         as >>=
+infixl 1 flippedBind  as =<<
 infixl 4 apply        as <*>
 infixl 4 flippedApply as <.>
 
@@ -74,38 +78,37 @@ infixl 4 flippedApply as <.>
 test :: Effect Unit
 test = do
   let
-    x           = Just 1
-    expected    = Just 7
+    x           = Just 1 :: Maybe' Int
+    expected    = Just 7 :: Maybe' Int
     compute     = (_ + 2) <<< (_ + 1)
-    unitApply   = unit $    compute -- this is partial application of a function
-    unitCompose = unit <<<  compute -- this is function composition
-    joining     = join
-                    <<< map (unit <<< compute)
-    joining'    = join
-                    <<< map unit
-                    <<< map compute
+
+    unitComputeCurried  = unit compute      -- this is partial application of a function
+    unitComputeComposed = unit <<<  compute -- this is function composition
+
+    joining     = join <<< map (unit <<< compute)
+    joining'    = join <<< map unit  <<< map compute
 
   -- JOINING
-  log $ show $ (Just 4) == joining  x
-  log $ show $ (Just 4) == joining' x
+  print $ (Just 4) == joining  x
+  print $ (Just 4) == joining' x
 
   -- APPLYING MANY TIMES
-  print $ expected == ( unitApply
-                          <*> ( unitApply
+  print $ expected == ( apply unitComputeCurried
+                          ( apply unitComputeCurried x ) )
+  print $ expected == ( unitComputeCurried
+                          <*> ( unitComputeCurried
                                   <*> x ) )
-  print $ expected == ( apply unitApply
-                          $ apply unitApply x )
   print $ expected == ( x
-                          <.> unitApply
-                                <.> unitApply )   -- NOTE: very similar to BINDING
+                          <.> unitComputeCurried
+                          <.> unitComputeCurried )   -- NOTE: very similar to BINDING
   -- JOINING MANY TIMES
-  print $ expected == ( join
-                          <<< map (unit <<< compute <<< compute)
-                          $ x )
+  print $ expected == ( join <<< map (unit <<< compute <<< compute) ) x
   -- BINDING MANY TIMES
+  print $ expected == ( (unit <<< compute <<< compute) =<< x )
+  print $ expected == ( x >>= (unit <<< compute <<< compute) )
   print $ expected == ( x
-                          >>= unitCompose
-                          >>= unitCompose ) -- NOTE: similar to flippedApply
+                          >>= unitComputeComposed
+                          >>= unitComputeComposed ) -- NOTE: similar to flippedApply
   -- COMPUTING MANY TIMES INSIDE DO
   print $ expected == do
                         a <- x
