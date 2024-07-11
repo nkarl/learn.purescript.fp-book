@@ -9,6 +9,8 @@ import Effect.Class (class MonadEffect)
 import Effect.Class.Console (log)
 
 {-- DATA MODEL --}
+
+-- The Maybe type
 data Maybe' a
   = Nothing
   | Just a
@@ -85,6 +87,7 @@ test = do
     unitComputeCurried  = unit compute      -- this is partial application of a function
     unitComputeComposed = unit <<<  compute -- this is function composition
 
+    -- NOTE: joining and joining' demonstrate the law of associative composition
     joining     = join <<< map (unit <<< compute)
     joining'    = join <<< map unit  <<< map compute
 
@@ -100,7 +103,7 @@ test = do
                                   <*> x ) )
   print $ expected == ( x
                           <.> unitComputeCurried
-                          <.> unitComputeCurried )   -- NOTE: very similar to BINDING
+                          <.> unitComputeCurried )  -- NOTE: very similar to BINDING
   -- JOINING MANY TIMES
   print $ expected == ( join <<< map (unit <<< compute <<< compute) ) x
   -- BINDING MANY TIMES
@@ -117,6 +120,3 @@ test = do
                           c = compute b
                         unit c
 
-{--
-  NOTE: joining and joining' show associative composition
---}
