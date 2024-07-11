@@ -9,6 +9,17 @@ import Effect.Class.Console (log)
 
 import Data.Profunctor (class Profunctor)
 
+{--
+s        :: *            -- the type (finite set) of states $S_0$
+s0       :: s            -- an initial state of type `s`
+a        :: *            -- the type of input  $\Sigma$
+c        :: *            -- the type of output $\Lambda$
+stepT    :: s -> a -> s  -- morphism $T$, taking a state and an input, producing a new state
+extractG :: s -> c       -- morphism $G$, tating a state, producing an output
+
+x        :: a            -- an input value of type `a`
+--}
+
 type ExtractG s c = s -> c
 type StepT    s a = s -> a -> s
 
@@ -22,12 +33,16 @@ instance profunctorFSM :: Profunctor (FSM s) where
   dimap f g (FSM s0 extractG stepT) = FSM s0 (g <<< extractG) (\s -> stepT s <<< f)
 
 {--
-  NOTE: in mapping between the two states: from (FSM s b c) 
-                                           to   (FSM s a d),
-  we have 2 variant actions:
+  NOTE: in mapping between the 2 machine states:  from (FSM s b c) 
+                                                  to   (FSM s a d),
+  we have 2 action variants:
     - contra-variant: b -> a
+      - output of `extractG` in $FSM_1$ is mapped to input of `extractG` in $FSM_2$
     - co-variant    : c -> d
---}
+      - input of `stepT`     in $FSM_1$ is mapped to output of `stepT`   in $FSM_2$ 
+
+  NOTE: the initial state $s_0$ is preserved and passed on across machine states.
+-}
 
 -- FSM s b c :: FSM s (s -> c) (s -> b -> s)
 -- FSM s a d :: FSM s (s -> d) (s -> a -> s)
