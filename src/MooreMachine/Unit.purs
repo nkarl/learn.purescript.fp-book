@@ -84,12 +84,11 @@ extractFn = case _ of
 
 {--
   TODO:
-    1. [ ] review the FSM and profunctor
-    2. [ ] aim for a _working_ understanding
-    3. [ ] write unit tests
-      - basic unit tests
-      - comparative unit tests with `foldL`
-    4. [ ] review and bolster my understanding in the context of the unit tests
+    1. [x] review the FSM and profunctor
+    2. [x] aim for a _working_ understanding
+    3. [ ] implement FSM for `foldL`
+    4. [ ] write unit tests
+    5. [ ] review and bolster my understanding in the context of the unit tests
 --}
 
 print :: forall a (m ∷ Type -> Type). MonadEffect m => Show a => a -> m Unit

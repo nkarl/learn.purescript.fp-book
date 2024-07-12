@@ -44,9 +44,9 @@ instance showTree :: (Show a) => Show (Tree a) where
 
 show' :: forall a. (Show a) => Tree a -> Int -> Int -> String
 show' EmptyTree _ _ = ""
-show' (Node x left right) depth width = offset_r <> "\n" <> offset_c <> offset_l
+show' (Node root left right) depth width = offset_r <> "\n" <> offset_c <> offset_l
   where
-  offset_c = (foldr (<>) "" $ (replicate depth " ")) <> show x
+  offset_c = (foldr (<>) "" $ (replicate depth " ")) <> show root
   offset_l = show' left   (depth + width) width
   offset_r = show' right  (depth + width) width
 
@@ -65,5 +65,6 @@ makeTree = (foldr insertNode EmptyTree) <<< reverse
 test :: Effect Unit
 test = do
   let
-    t = makeTree [ 6, 4, 3, 5, 7, 1, 9 ]
+    nums = [6, 4, 3, 5, 7, 1, 9] :: Array Int
+    t = makeTree nums
   log $ show t

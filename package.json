@@ -10,11 +10,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "purs-tidy": "^0.10.0",
+    "purs-tidy": "^0.10.1",
     "purty": "^7.0.0"
   },
   "dependencies": {
-    "purescript-language-server": "^0.17.2",
+    "purescript-language-server": "^0.17.3",
     "purescript-psa": "^0.8.2"
-  }
+  },
+  "packageManager": "pnpm@9.2.0+sha256.94fab213df221c55b6956b14a2264c21c6203cca9f0b3b95ff2fe9b84b120390"
 }

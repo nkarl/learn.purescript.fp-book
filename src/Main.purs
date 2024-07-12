@@ -24,8 +24,8 @@ import Effect (Effect)
 --import Foldable.FoldableList as Foldable.FoldableList
 --import Foldable.Foldable as Foldable.Foldable
 --import Maybe.Maybe08 as Maybe.Maybe08
---import MooreMachine.Unit as MooreMachine.Unit
-import Trees.Binary as Trees.Binary
+import MooreMachine.Unit as MooreMachine.Unit
+--import Trees.Binary as Trees.Binary
 
 main :: Effect Unit
 main = do
@@ -49,5 +49,5 @@ main = do
   --RandomNumber03.test
   --Foldable.FoldableList.test
   --Foldable.Foldable.test
-  --MooreMachine.Unit.test
-  Trees.Binary.test
+  MooreMachine.Unit.test
+  --Trees.Binary.test
