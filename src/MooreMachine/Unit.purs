@@ -57,23 +57,14 @@ instance profunctorFSM :: Profunctor (FSM s) where
 -- \s -> stepFn s . f :: s -> (a -> s)
 -- state S
 
-{--
-  TODO:
-    1. [x] review the FSM and profunctor
-    2. [x] aim for a _working_ understanding
-    3. [x] implement FSM for `foldL`
-    4. [x] write unit tests
-    5. [ ] review and bolster my understanding in the context of the unit tests
---}
-
 -- because that all functors in PureScript are endo-functors,
 -- we can rewrite the signature with just `a` as below
 -- runFoldL :: forall s a f. Foldable f => FSM s a a -> f a -> a
 runFoldL :: forall s a b f. Foldable f => FSM s a b -> f a -> b
 runFoldL (FSM s0 extract transition) = extract <<< foldl transition s0
 
-bareFold :: forall a f. Foldable f => Semiring a => f a -> a
-bareFold = identity <<< foldl (+) zero
+bareFoldL :: forall a f. Foldable f => Semiring a => f a -> a
+bareFoldL = foldl (+) zero
 
 -- NOTE: in this example, the polymorphic types in the involved actions
 -- are constrained to the same Semiring type.
@@ -92,11 +83,32 @@ sizer = dimap length identity addr
 print :: forall a (m ∷ Type -> Type). MonadEffect m => Show a => a -> m Unit
 print = log <<< show
 
+{--
+  TODO:
+    1. [x] review the FSM and profunctor
+    2. [x] aim for a _working_ understanding
+    3. [x] implement FSM for `foldL`
+    4. [x] write unit tests
+    5. [ ] review and bolster my understanding in the context of the unit tests
+--}
+
 -- test unit
 test :: Effect Unit
 test = do
   print "test: MooreMachine"
-  print $ 6 == (bareFold [1, 2, 3])
+  print $ 6 == (bareFoldL [1, 2, 3])
   print $ 6 == (runFoldL addr [1, 2, 3])
   print $ 6.0 == (runFoldL addr [1.0, 2.0, 3.0])
   print $ 3 == (runFoldL sizer ["a", "bb"])
+
+
+{--
+  NOTE: some notes
+  - an FSM is a computational context
+  - `addr` is a function that is wrapped in side a FSM context
+  - `runFoldL addr`
+    - performs a `foldl` with the function `addr` over a Foldable `f`, and then
+    - invokes `extract` in the FSM and retrieve the output
+  - a `dimap` is like `map` but more complex, and requires more careful attention
+  - a `dimap` is a pattern we can use when we have to map two actions into FSM context
+--}
