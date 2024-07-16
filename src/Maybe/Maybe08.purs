@@ -42,6 +42,7 @@ class (Join m, Bind m) <= Monad m
 
 {-- DEFINITIONS --}
 instance functorMaybe' :: Functor Maybe' where
+  map :: forall a b. (a -> b) -> Maybe' a -> Maybe' b
   map _ Nothing = Nothing
   map f (Just x) = Just $ f x
 

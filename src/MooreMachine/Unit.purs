@@ -2,12 +2,12 @@ module MooreMachine.Unit where
 
 import Prelude
 
-import Data.Tuple (Tuple(..))
+import Data.Foldable (class Foldable, foldl)
+import Data.String (length)
+import Data.Profunctor (class Profunctor, dimap)
 import Effect (Effect)
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console (log)
-
-import Data.Profunctor (class Profunctor)
 
 {--
 s        :: *            -- the type (finite set) of states $S_0$
@@ -19,14 +19,16 @@ extractG :: s -> c       -- morphism $G$, tating a state, producing an output
 
 x        :: a            -- an input value of type `a`
 --}
+type ExtractG s c
+  = s -> c
 
-type ExtractG s c = s -> c
-type StepT    s a = s -> a -> s
+type StepT s a
+  = s -> a -> s
 
 --data FSM s a c
--- = FSM s (s -> c) (s -> a -> s)
+--  = FSM s (ExtractG s c) (StepT s a)
 data FSM s a c
-  = FSM s (ExtractG s c) (StepT s a)
+ = FSM s (s -> c) (s -> a -> s)
 
 instance profunctorFSM :: Profunctor (FSM s) where
   dimap :: forall a b c d. (a -> b) -> (c -> d) -> FSM s b c -> FSM s a d
@@ -39,61 +41,62 @@ instance profunctorFSM :: Profunctor (FSM s) where
     - contra-variant: b -> a
       - output of `extractG` in $FSM_1$ is mapped to input of `extractG` in $FSM_2$
     - co-variant    : c -> d
-      - input of `stepT`     in $FSM_1$ is mapped to output of `stepT`   in $FSM_2$ 
+      - input  of `stepT`    in $FSM_1$ is mapped to output of `stepT`   in $FSM_2$ 
 
   NOTE: the initial state $s_0$ is preserved and passed on across machine states.
 -}
-
 -- FSM s b c :: FSM s (s -> c) (s -> b -> s)
 -- FSM s a d :: FSM s (s -> d) (s -> a -> s)
-
 -- extractFn          :: s -> c -- Extract
 -- g                  :: c -> d
 -- g . extractFn      :: s -> d
-
 -- f                  :: a -> b
 -- stepFn             :: s -> b -> s -- Step
 -- stepFn s           :: b -> s
 -- stepFn s . f       :: a -> s
 -- \s -> stepFn s . f :: s -> (a -> s)
-
 -- state S
-data Oven = Off | Bake | Idling
--- input \Sigma
-data Signal = ButtonBake | ButtonOff | TooHot | TooCold 
--- extractFn \Lambda
-data Heat = Hot | Cold
-
--- checks a subset of the Cartesian product of S and \Sigma 
-stepFn :: Oven -> Signal -> Oven
-stepFn x y = go $ Tuple x y
-  where
-    go = case _ of
-      Tuple Off     ButtonBake  -> Bake
-      Tuple Bake    ButtonOff   -> Off
-      Tuple Bake    TooHot      -> Idling
-      Tuple Idling  TooCold     -> Bake
-      Tuple Idling  ButtonOff   -> Off
-      Tuple s       _           -> s
-
-extractFn :: Oven -> Heat
-extractFn = case _ of
-  Off     -> Cold
-  Bake    -> Hot
-  Idling  -> Cold
 
 {--
   TODO:
     1. [x] review the FSM and profunctor
     2. [x] aim for a _working_ understanding
-    3. [ ] implement FSM for `foldL`
-    4. [ ] write unit tests
+    3. [x] implement FSM for `foldL`
+    4. [x] write unit tests
     5. [ ] review and bolster my understanding in the context of the unit tests
 --}
 
+-- because that all functors in PureScript are endo-functors,
+-- we can rewrite the signature with just `a` as below
+-- runFoldL :: forall s a f. Foldable f => FSM s a a -> f a -> a
+runFoldL :: forall s a b f. Foldable f => FSM s a b -> f a -> b
+runFoldL (FSM s0 extract transition) = extract <<< foldl transition s0
+
+bareFold :: forall a f. Foldable f => Semiring a => f a -> a
+bareFold = identity <<< foldl (+) zero
+
+-- NOTE: in this example, the polymorphic types in the involved actions
+-- are constrained to the same Semiring type.
+addr :: forall a. Semiring a => FSM a a a
+addr = FSM zero identity (+)
+
+-- takes a `Foldable String` and sum up the lengths of all strings in it
+--         FSM s   b      c
+-- addr :: FSM Int Int    Int
+--         FSM s   a      d
+sizer   :: FSM Int String Int
+sizer = dimap length identity addr
+
+
+-- symbol for sending string to the console output
 print :: forall a (m ∷ Type -> Type). MonadEffect m => Show a => a -> m Unit
 print = log <<< show
 
+-- test unit
 test :: Effect Unit
 test = do
-  print "placeholder"
+  print "test: MooreMachine"
+  print $ 6 == (bareFold [1, 2, 3])
+  print $ 6 == (runFoldL addr [1, 2, 3])
+  print $ 6.0 == (runFoldL addr [1.0, 2.0, 3.0])
+  print $ 3 == (runFoldL sizer ["a", "bb"])

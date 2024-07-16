@@ -1,6 +1,6 @@
 module Main where
 
-import Prelude (Unit)
+import Prelude
 import Effect (Effect)
 --import Ch5 as Ch5
 --import Ch6 as Ch6
@@ -49,5 +49,6 @@ main = do
   --RandomNumber03.test
   --Foldable.FoldableList.test
   --Foldable.Foldable.test
+  --Maybe.Maybe08.test
   MooreMachine.Unit.test
   --Trees.Binary.test
