@@ -1,4 +1,4 @@
-module Reader.Monadic01 where
+module Reader.Unit where
 
 import Prelude
 import Effect (Effect)
@@ -51,6 +51,12 @@ runReader :: forall a r. Reader r a -> r -> a
 runReader (Reader f) = f
 
 instance monadReader :: Monad (Reader r)
+
+ask :: forall r. Reader r r
+ask = Reader $ identity
+
+asks :: forall a r. (r -> a) -> Reader r a
+asks f = Reader \r -> f r
 
 test :: Effect Unit
 test = do

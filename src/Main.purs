@@ -2,17 +2,14 @@ module Main where
 
 import Prelude
 import Effect (Effect)
---import Ch5 as Ch5
---import Ch6 as Ch6
---import Ch7a as Ch7a
---import Ch7b as Ch7b
---import CSV.Rep04 as CSV.Rep04
 --import Ch19 as Ch19
+import Monads.Writer.Unit as Monads.Writer.Unit
+
 --import Maybe.Maybe07 as Maybe07
 --import Either.Either01 as Either01
 --import Parser.Applicative01 as Parser.Applicative01
 --import Parser.Monadic02 as Parser.Monadic02
---import Reader.Monadic01 as ReaderMonad
+--import Monads.Reader.Unit as ReaderMonad
 --import Ch23a as Ch23a
 --import TickTock.Rep05 as TickTock.Rep05
 --import Ch23b as Ch23b
@@ -24,9 +21,9 @@ import Effect (Effect)
 --import Foldable.FoldableList as Foldable.FoldableList
 --import Foldable.Foldable as Foldable.Foldable
 --import Maybe.Maybe08 as Maybe.Maybe08
-import MooreMachine.Unit as MooreMachine.Unit
+--import StateMachines.Moore as StateMachines.Moore
 --import Trees.Binary as Trees.Binary
-
+--import Monads.Stack.Transformer as Monads.Stack.Transformer
 main :: Effect Unit
 main = do
   --Ch5.test
@@ -50,5 +47,7 @@ main = do
   --Foldable.FoldableList.test
   --Foldable.Foldable.test
   --Maybe.Maybe08.test
-  MooreMachine.Unit.test
+  --StateMachines.Moore.test
   --Trees.Binary.test
+  --Monads.Stack.Transformer.test
+  Monads.Writer.Unit.test

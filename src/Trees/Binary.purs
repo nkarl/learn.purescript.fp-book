@@ -8,11 +8,8 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (fromMaybe)
 import Data.String (length)
 import Effect (Effect)
-import Effect.Class (class MonadEffect)
-import Effect.Class.Console (log)
+import Utils (print)
 
-print :: forall a m. MonadEffect m => Show a => a -> m Unit
-print = log <<< show
 
 data Tree a
   = EmptyTree
@@ -67,4 +64,4 @@ test = do
   let
     nums = [6, 4, 3, 5, 7, 1, 9] :: Array Int
     t = makeTree nums
-  log $ show t
+  print t

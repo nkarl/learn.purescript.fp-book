@@ -1,7 +1,6 @@
-module Monads.State.State01 where
+module Monads.State.Unit where
 
 import Prelude
-import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class.Console (log)
@@ -11,7 +10,7 @@ newtype State s a
 
 {-- NOTE:
       1. receives a State variable `s`
-      2. runs the Context `cx` on `s`
+      2. runs the State `cx` on `s`
       3. passes the result from #2 to a lambda which
         - unwraps the result from #2, and
         - produce a new Tuple from

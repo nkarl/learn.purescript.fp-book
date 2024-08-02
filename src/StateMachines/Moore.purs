@@ -1,4 +1,4 @@
-module MooreMachine.Unit where
+module StateMachiens.Moore where
 
 import Prelude
 
@@ -6,8 +6,8 @@ import Data.Foldable (class Foldable, foldl)
 import Data.String (length)
 import Data.Profunctor (class Profunctor, dimap)
 import Effect (Effect)
-import Effect.Class (class MonadEffect)
-import Effect.Class.Console (log)
+
+import Utils (print)
 
 {--
 s        :: *            -- the type (finite set) of states $S_0$
@@ -78,10 +78,6 @@ addr = FSM zero identity (+)
 sizer   :: FSM Int String Int
 sizer = dimap length identity addr
 
-
--- symbol for sending string to the console output
-print :: forall a (m ∷ Type -> Type). MonadEffect m => Show a => a -> m Unit
-print = log <<< show
 
 {--
   TODO:

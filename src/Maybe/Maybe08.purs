@@ -1,12 +1,10 @@
 module Maybe.Maybe08 where
 
-import Prelude
-
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
-import Effect.Class (class MonadEffect)
-import Effect.Class.Console (log)
+import Prelude 
+import Utils (print)
 
 {-- DATA MODEL --}
 
@@ -69,9 +67,6 @@ flippedApply = flip apply
 flippedBind :: forall m a b. Bind m => (a -> m b) -> m a -> m b
 flippedBind  = flip bind
 
-print :: forall a m. MonadEffect m => Show a => a -> m Unit
-print = log <<< show
-
 infixl 1 bind         as >>=
 infixl 1 flippedBind  as =<<
 infixl 4 apply        as <*>
@@ -120,4 +115,4 @@ test = do
                           b = compute a
                           c = compute b
                         unit c
-
+  print $ Just 5 == unit (compute 2)
