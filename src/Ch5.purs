@@ -102,7 +102,7 @@ index (x : _) 0 = Just x
 
 index (_ : xs) i = index xs (i - 1)
 
-infixl 8 index as !!  -- operator alias for the function index
+infixl 8 index as !! -- operator alias for the function index
 
 -- f15. findIndex takes a predicate and a list and return the element that matches that predicate
 findIndex :: forall a. (a -> Boolean) -> List a -> Maybe Int

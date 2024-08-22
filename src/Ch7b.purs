@@ -10,8 +10,7 @@ import Data.String (Pattern(..), split)
 import Effect (Effect)
 import Effect.Console (log)
 
-newtype CSV
-  = CSV String
+newtype CSV = CSV String
 
 derive instance newtypeCSV :: Newtype CSV _
 
@@ -22,8 +21,7 @@ derive newtype instance Show CSV
 class ToCSV a where
   toCSV :: a -> CSV
 
-newtype FullName
-  = FullName String
+newtype FullName = FullName String
 
 --instance showFullName :: Show (FullName) where
 --show (FullName name) = name
@@ -33,8 +31,7 @@ derive newtype instance showFullName :: Show FullName
 
 derive newtype instance eqFullName :: Eq FullName
 
-newtype Age
-  = Age Int
+newtype Age = Age Int
 
 derive instance genericAge :: Newtype Age _
 
@@ -55,12 +52,11 @@ derive instance eqOccupation :: Eq Occupation
 instance showOccupation :: Show Occupation where
   show = genericShow
 
-data Person
-  = Person
-    { name :: FullName
-    , age :: Age
-    , occupation :: Occupation
-    }
+data Person = Person
+  { name :: FullName
+  , age :: Age
+  , occupation :: Occupation
+  }
 
 derive instance eqPerson :: Eq Person
 

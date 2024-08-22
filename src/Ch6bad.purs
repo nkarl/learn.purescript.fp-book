@@ -9,8 +9,7 @@ data HasAddress
   | AddressResidence Residence
   | AddressEmptyLot EmptyLot
 
-newtype Miles
-  = Miles Int
+newtype Miles = Miles Int
 
 getDirections :: Address -> Directions
 getDirections address = Directions (address)
@@ -25,8 +24,8 @@ getDirectionsResidence :: Residence -> Directions
 getDirectionsResidence =
   getDirections
     <<< case _ of
-        Home address -> address
-        Facility address -> address
+      Home address -> address
+      Facility address -> address
 
 getDirectionsEmptyLot :: EmptyLot -> Directions
 getDirectionsEmptyLot (EmptyLot lot) = getDirections lot.address
@@ -64,11 +63,11 @@ getMilesTo :: HasAddress -> Miles
 getMilesTo =
   getMiles
     <<< case _ of
-        AddressPerson (Person { address }) -> address
-        AddressCompany (Company { address }) -> address
-        AddressResidence (Home address) -> address
-        AddressResidence (Facility address) -> address
-        AddressEmptyLot (EmptyLot { address }) -> address
+      AddressPerson (Person { address }) -> address
+      AddressCompany (Company { address }) -> address
+      AddressResidence (Home address) -> address
+      AddressResidence (Facility address) -> address
+      AddressEmptyLot (EmptyLot { address }) -> address
 
 {--
   This version despite being better, is still a pain because we have to maintain 

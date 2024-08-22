@@ -19,16 +19,13 @@ import Effect.Random (random)
 --}
 -- `BusRW :: Bus ( read :: Cap, write :: Cap)` is a row type.
 -- | is a Bus that reads and writes strings.
-type StrBus
-  = BusRW String
+type StrBus = BusRW String
 
 -- | could contain more properties, for example env variables.
-type Reader
-  = { bus :: StrBus }
+type Reader = { bus :: StrBus }
 
 -- | the program's state, contains the count.
-type State
-  = { count :: Int }
+type State = { count :: Int }
 
 {--
   NOTE: can it be replaced with `forE` instead?
@@ -41,8 +38,7 @@ type State
 --}
 -- each fiber is composed as a stack of Reader $ State $ Aff
 --  FiberMS a :: ReaderT r      m                    a
-type FiberMS a
-  = ReaderT Reader (StateT State (Aff)) a
+type FiberMS a = ReaderT Reader (StateT State (Aff)) a
 
 {--
   NOTE: ACTIONS
@@ -68,12 +64,13 @@ affRandom = liftEffect random -- we replace callbacks with `liftEffect` and thus
 runFiberM :: BusRW String -> (FiberMS Unit -> Aff Unit) -- (Tuple Unit State)
 runFiberM bus =
   void -- coerce the polymorphic type `a` to Unit
+
     <<< forkAff -- fork a new fiber for this call
     -- runStateT  :: (StateT  s m a) -> s -> m a
-    
+
     <<< flip runStateT { count: 10 } -- flip to take `s` first and `StateT s m a` later, partial
     -- runReaderT :: (ReaderT r m a) -> r -> m a
-    
+
     <<< flip runReaderT { bus } -- flip to take `r` first and `ReaderT r m a` later, partial
 
 -- | subscribe fiber

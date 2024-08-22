@@ -10,29 +10,25 @@ module Ch6
   , person
   ) where
 
-type Address
-  = { street1 :: String
-    , street2 :: String
-    , city :: String
-    , state :: String
-    , zip :: String
-    }
+type Address =
+  { street1 :: String
+  , street2 :: String
+  , city :: String
+  , state :: String
+  , zip :: String
+  }
 
-newtype Directions
-  = Directions Address
+newtype Directions = Directions Address
 
-data Person
-  = Person { name :: String, age :: Int, address :: Address }
+data Person = Person { name :: String, age :: Int, address :: Address }
 
-data Company
-  = Company { name :: String, address :: Address }
+data Company = Company { name :: String, address :: Address }
 
 data Residence
   = Home Address
   | Facility Address
 
-data EmptyLot
-  = EmptyLot { daysEmpty :: Int, price :: Int, address :: Address }
+data EmptyLot = EmptyLot { daysEmpty :: Int, price :: Int, address :: Address }
 
 person :: Person
 person =
