@@ -1,14 +1,18 @@
 module Parser.Monadic02 where
 
 import Prelude
+
+import Control.Alt (class Alt, (<|>))
+import Data.CodePoint.Unicode (isAlpha, isDecDigit)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
-import Data.String.CodeUnits (uncons)
+import Data.String.CodePoints (codePointFromChar)
+import Data.String.CodeUnits (fromCharArray, uncons)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Effect.Class.Console (log)
+import Utils (print)
 
 {--
   NOTE: high level view
@@ -35,13 +39,14 @@ type Process e a
 newtype Action e a
   = Action (Process e a)
 
--- datatype for Error, a sum type that accounts for at least the EOF possibility.
-data Error
+-- datatype for ErrorMsg, a sum type that accounts for at least the EOF possibility.
+data ErrorMsg
   = EOF
+  | InvalidChar String
 
-derive instance genericErrorType :: Generic Error _
+derive instance genericErrorType :: Generic ErrorMsg _
 
-instance showErrorType :: Show Error where
+instance showErrorType :: Show ErrorMsg where
   show = genericShow
 
 {--
@@ -52,9 +57,11 @@ instance showErrorType :: Show Error where
 --}
 class Failure (e :: Type) where
   eof :: e
+  invalidChar :: String -> e
 
-instance failingError :: Failure  {- with -} Error where
+instance failingError :: Failure  {- with -} ErrorMsg where
   eof = EOF
+  invalidChar = InvalidChar
 
 {-
   NOTE: functor instances
@@ -96,38 +103,59 @@ instance monadAction :: Monad (Action e)
 -- Action e Char :: String -> Failure e => Either e (Tuple String Char)
 --class TakeOneChar e where
 take1char :: forall e. Action e Char
---instance TakeOneChar Error where
+--instance TakeOneChar ErrorMsg where
 take1char =
   Action \s -> case uncons s of
-    Nothing -> Left eof -- :: (Either Error _)
+    Nothing -> Left eof -- :: (Either ErrorMsg _)
     Just { head, tail } -> Right $ Tuple tail head
 
 {-
   NOTE: take some chars from the string
 -}
---take2chars :: (Action Error) String
---take2chars = do
---c1 <- take1char
---c2 <- take1char
---pure $ fromCharArray [ c1, c2 ]
-{-- helper --}
-unwrap :: forall e a. Action e a -> Process e a
-unwrap (Action f) = f
+take2chars :: (Action ErrorMsg) String
+take2chars = do
+  c1 <- take1char
+  c2 <- take1char
+  pure $ fromCharArray [ c1, c2 ]
 
-unwrap' :: forall a. Action Error a -> Process Error a
-unwrap' = unwrap
+{-- helper --}
+parse :: forall e a. Failure e => Action e a -> Process e a
+parse (Action f) = f
+
+fail' :: forall e a. (Failure e) => e -> Action e a
+fail' e = Action $ \_ -> Left e
+
+satisfy :: forall e. (Failure e) => String -> (Char -> Boolean) -> Action e Char
+satisfy expected predicate =
+  take1char
+    >>= \c ->
+        if predicate c then pure c else fail' $ invalidChar expected -- Left $ invalidChar expected
+
+digit :: forall e. Failure e => Action e Char
+digit = satisfy "digit" (isDecDigit <<< codePointFromChar)
+
+letter :: forall e. Failure e => Action e Char
+letter = satisfy "letter" (isAlpha <<< codePointFromChar)
+
+instance altParse :: Alt (Action e) where
+  alt p1 p2 =
+    Action
+      $ \s -> case parse p1 s of
+          Left _ -> parse p2 s
+          Right x -> Right x
+
+alphaNum :: forall e. Failure e => Action e Char
+alphaNum = letter <|> digit
 
 -- NOTE: unit test
 test :: Effect Unit
 test = do
-  log
-    $ show do
-        let
-          x = "ABC"
-
-          y = unwrap' take1char $ x -- :: Either Error _
-        y
-
---log $ show $ (unwrap' take2chars $ "ABC")
---log $ show $ (unwrap' take2chars $ "ABC")
---log $ show $ (unwrap' take2chars $ "AB")
+  --print do
+  --let
+  --x = "ABC"
+  --y = parse take1char $ x -- :: Either ErrorMsg _
+  --y = unwrap' take1char $ x :: Either ErrorMsg _
+  --y
+  print $ (parse take2chars $ "ABC")
+  print $ (parse take2chars $ "ABC")
+  print $ (parse take2chars $ "AB")

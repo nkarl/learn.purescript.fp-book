@@ -1,4 +1,4 @@
-module StateMachiens.Moore where
+module StateMachines.Moore where
 
 import Prelude
 

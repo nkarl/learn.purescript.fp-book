@@ -15,9 +15,9 @@ newtype CSV
 
 derive instance newtypeCSV :: Newtype CSV _
 
-derive newtype instance eqCSV :: Eq CSV
+derive newtype instance Eq CSV
 
-derive newtype instance showCSV :: Show CSV
+derive newtype instance Show CSV
 
 class ToCSV a where
   toCSV :: a -> CSV

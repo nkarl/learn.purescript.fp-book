@@ -3,8 +3,6 @@ module Main where
 import Prelude
 import Effect (Effect)
 --import Ch19 as Ch19
-import Monads.Writer.Unit as Monads.Writer.Unit
-
 --import Maybe.Maybe07 as Maybe07
 --import Either.Either01 as Either01
 --import Parser.Applicative01 as Parser.Applicative01
@@ -20,10 +18,15 @@ import Monads.Writer.Unit as Monads.Writer.Unit
 --import RNG.RandomNumber03 as RandomNumber03
 --import Foldable.FoldableList as Foldable.FoldableList
 --import Foldable.Foldable as Foldable.Foldable
---import Maybe.Maybe08 as Maybe.Maybe08
---import StateMachines.Moore as StateMachines.Moore
---import Trees.Binary as Trees.Binary
+--import Maybe.Maybe08 as Maybe08
+import StateMachines.Moore as StateMachines.Moore
+--import Trees.Binary as Binary
 --import Monads.Stack.Transformer as Monads.Stack.Transformer
+--import Monads.Writer.Unit as Monads.Writer.Unit
+import Monads.Parser.Unit as Monads.Parser.Unit
+--import Monads.Stack.Transformer as Monads.Stack.Transformer
+import FFI.RandomNum as RandomNum
+
 main :: Effect Unit
 main = do
   --Ch5.test
@@ -47,7 +50,10 @@ main = do
   --Foldable.FoldableList.test
   --Foldable.Foldable.test
   --Maybe.Maybe08.test
-  --StateMachines.Moore.test
+  StateMachines.Moore.test
   --Trees.Binary.test
   --Monads.Stack.Transformer.test
-  Monads.Writer.Unit.test
+  --Monads.Writer.Unit.test
+  Monads.Parser.Unit.test
+  --Monads.Stack.Transformer.test
+  RandomNum.test

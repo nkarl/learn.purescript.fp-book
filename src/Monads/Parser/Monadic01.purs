@@ -1,14 +1,17 @@
 module Parser.Monadic01 where
 
 import Prelude
+import Control.Plus (class Alt)
+import Data.CodePoint.Unicode (isAlpha, isDecDigit)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
+import Data.String.CodePoints (codePointFromChar)
 import Data.String.CodeUnits (fromCharArray, uncons)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Effect.Console (log)
+import Utils (print)
 
 -- | A State. a Tuple of String and a polymorphic type `a`.
 type State a
@@ -22,6 +25,7 @@ type Action e a
 -- | Some State error. Produced by some unsuccessful action.
 class Failure (e :: Type) where
   eof :: e
+  invalidChar :: String -> e
 
 -- | A Context, which wraps an Action.
 newtype Context e a
@@ -29,6 +33,7 @@ newtype Context e a
 
 data ErrorEOF
   = EOF
+  | InvalidChar String
 
 {-- DERIVE INSTANCES --}
 derive instance genericErrorEOF :: Generic ErrorEOF _
@@ -39,13 +44,11 @@ instance showErrorEOF :: Show ErrorEOF where
 
 instance parsingErrorEOF :: Failure ErrorEOF where
   eof = EOF
+  invalidChar = InvalidChar
 
 {-- helper --}
 unwrap :: forall e a. (Context e) a -> (Action e) a
 unwrap (Context f) = f
-
-unwrap' :: forall a. (Context ErrorEOF) a -> (Action ErrorEOF) a
-unwrap' = unwrap
 
 {--
   DEFINE APPLICATIVE FUNCTOR INSTANCES
@@ -113,18 +116,33 @@ take3chars' = do
   c3 <- take1char_
   pure $ fromCharArray [ c1, c2, c3 ]
 
+fail' :: forall e a. (Failure e) => e -> Context e a
+fail' e = Context $ \_ -> Left e
+
+satisfy :: forall e. (Failure e) => String -> (Char -> Boolean) -> Context e Char
+satisfy expected predicate =
+  take1char_
+    >>= \c ->
+        if predicate c then pure c else fail' $ invalidChar expected -- Left $ invalidChar expected
+
+digit :: forall e. Failure e => Context e Char
+digit = satisfy "digit" (isDecDigit <<< codePointFromChar)
+
+letter :: forall e. Failure e => Context e Char
+letter = satisfy "letter" (isAlpha <<< codePointFromChar)
+
+instance altParse :: Alt (Context e) where
+  alt p1 p2 =
+    Context
+      $ \s -> case unwrap p1 s of
+          Left _ -> unwrap p2 s
+          Right x -> Right x
+
 test :: Effect Unit
 test = do
-  log $ show $ (unwrap' take1char_ $ "ABC")
-  log $ show $ (unwrap' take2chars $ "ABC")
-  log $ show $ (unwrap' take3chars $ "ABC")
-  log $ show $ (unwrap' take3chars $ "AB")
-  log
-    $ show do
-        let
-          x = "ABC"
-
-          y = (unwrap' take1char_) $ x
-        (y)
-  log $ show $ (unwrap' take3chars' $ "ABC")
-  log $ show $ (unwrap' take3chars' $ "AB")
+  print $ ((unwrap take1char_ $ "ABC") :: Either ErrorEOF _)
+  print $ ((unwrap take2chars $ "ABC") :: Either ErrorEOF _)
+  print $ ((unwrap take3chars $ "ABC") :: Either ErrorEOF _)
+  print $ ((unwrap take3chars $ "AB") :: Either ErrorEOF _)
+  print $ ((unwrap take3chars' $ "ABC") :: Either ErrorEOF _)
+  print $ ((unwrap take3chars' $ "AB") :: Either ErrorEOF _)
