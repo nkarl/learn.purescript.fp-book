@@ -4,7 +4,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Prelude 
-import Utils (print)
+import Utils (println)
 
 {-- DATA MODEL --}
 
@@ -88,31 +88,31 @@ test = do
     joining'    = join <<< map unit  <<< map compute
 
   -- JOINING
-  print $ (Just 4) == joining  x
-  print $ (Just 4) == joining' x
+  println $ (Just 4) == joining  x
+  println $ (Just 4) == joining' x
 
   -- APPLYING MANY TIMES
-  print $ expected == ( apply unitComputeCurried
+  println $ expected == ( apply unitComputeCurried
                           ( apply unitComputeCurried x ) )
-  print $ expected == ( unitComputeCurried
+  println $ expected == ( unitComputeCurried
                           <*> ( unitComputeCurried
                                   <*> x ) )
-  print $ expected == ( x
+  println $ expected == ( x
                           <.> unitComputeCurried
                           <.> unitComputeCurried )  -- NOTE: very similar to BINDING
   -- JOINING MANY TIMES
-  print $ expected == ( join <<< map (unit <<< compute <<< compute) ) x
+  println $ expected == ( join <<< map (unit <<< compute <<< compute) ) x
   -- BINDING MANY TIMES
-  print $ expected == ( (unit <<< compute <<< compute) =<< x )
-  print $ expected == ( x >>= (unit <<< compute <<< compute) )
-  print $ expected == ( x
+  println $ expected == ( (unit <<< compute <<< compute) =<< x )
+  println $ expected == ( x >>= (unit <<< compute <<< compute) )
+  println $ expected == ( x
                           >>= unitComputeComposed
                           >>= unitComputeComposed ) -- NOTE: similar to flippedApply
   -- COMPUTING MANY TIMES INSIDE DO
-  print $ expected == do
+  println $ expected == do
                         a <- x
                         let
                           b = compute a
                           c = compute b
                         unit c
-  print $ Just 5 == unit (compute 2)
+  println $ Just 5 == unit (compute 2)

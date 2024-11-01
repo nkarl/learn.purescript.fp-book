@@ -3,7 +3,7 @@ module FFI.RandomNum where
 import Prelude
 
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 foreign import randomImpl :: Number
 
@@ -12,4 +12,4 @@ random = randomImpl
 
 test :: Effect Unit
 test = do
-  print $ random
+  println $ random

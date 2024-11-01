@@ -3,7 +3,7 @@ module Monads.Writer.Unit where
 import Prelude
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 newtype Writer s a
   = Writer (Tuple a s)
@@ -50,4 +50,4 @@ doNothingWithLog = do
 
 test :: Effect Unit
 test = do
-  print $ "placeholder"
+  println $ "placeholder"

@@ -7,7 +7,7 @@ import Data.String (length)
 import Data.Profunctor (class Profunctor, dimap)
 import Effect (Effect)
 
-import Utils (print)
+import Utils (println)
 
 {--
 s        :: *            -- the type (finite set) of states $S_0$
@@ -91,11 +91,11 @@ sizer = dimap length identity addr
 -- test unit
 test :: Effect Unit
 test = do
-  print "test: MooreMachine"
-  print $ 6 == (bareFoldL [1, 2, 3])
-  print $ 6 == (runFoldL addr [1, 2, 3])
-  print $ 6.0 == (runFoldL addr [1.0, 2.0, 3.0])
-  print $ 3 == (runFoldL sizer ["a", "bb"])
+  println "test: MooreMachine"
+  println $ 6 == (bareFoldL [1, 2, 3])
+  println $ 6 == (runFoldL addr [1, 2, 3])
+  println $ 6.0 == (runFoldL addr [1.0, 2.0, 3.0])
+  println $ 3 == (runFoldL sizer ["a", "bb"])
 
 
 {--

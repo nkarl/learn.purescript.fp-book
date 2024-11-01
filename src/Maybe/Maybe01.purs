@@ -1,6 +1,6 @@
 module Maybe.Maybe01 where
 
-import Prelude
+import Prelude (class Show, Unit, ($), discard, (<>), show, (+), (<<<), (>>>))
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
@@ -26,7 +26,8 @@ instance functorMayb3 :: Functor Mayb3 where
   map f (Just x) = Just (f x)
 
 class
-  Functor f <= Apply f where
+  Functor f <=
+  Apply f where
   apply :: forall a b. f (a -> b) -> f a -> f b
 
 instance applyMayb3 :: Apply Mayb3 where
@@ -34,14 +35,16 @@ instance applyMayb3 :: Apply Mayb3 where
   apply (Just f) x = f `map` x
 
 class
-  Apply f <= Applicative f where
+  Apply f <=
+  Applicative f where
   pure :: forall a. a -> f a
 
 instance applicativeMayb3 :: Applicative Mayb3 where
   pure = Just
 
 class
-  Applicative f <= Bind f where
+  Applicative f <=
+  Bind f where
   bind :: forall a b. f a -> (a -> f b) -> f b
 
 instance bindMayb3 :: Bind Mayb3 where
@@ -49,7 +52,8 @@ instance bindMayb3 :: Bind Mayb3 where
   bind (Just x) f = f x
 
 class
-  Apply f <= Join f where
+  Apply f <=
+  Join f where
   join :: forall a. f (f a) -> f a
 
 instance joinMayb3 :: Join Mayb3 where
@@ -73,7 +77,8 @@ test = do
   log $ "lift (_ + 1) into Mayb3.Just and apply to (pure 2):\n\t"
     <> (show $ Just (_ + 1) `apply` pure 2)
   log $ "BIND:\n\t"
-    <> ( show
+    <>
+      ( show
           $ Just 2
               `bind`
                 (pure <<< (_ + 1))
@@ -81,7 +86,8 @@ test = do
                 (pure <<< (_ + 2))
       ) -- needs parentheses because operator precedence is not set for `bind`
   log $ "BIND (associative composition):\n\t"
-    <> ( show
+    <>
+      ( show
           $ Just 2
               `bind`
                 ( pure
@@ -90,7 +96,8 @@ test = do
                 )
       ) -- needs parentheses because operator precedence is not set for `bind`
   log $ "JOIN `compose` the functions and then `pure`/lift and then `map` over (Just 2) and then `join`:\n\t"
-    <> ( show
+    <>
+      ( show
           ( join
               ( map
                   ( pure
@@ -102,7 +109,8 @@ test = do
           )
       )
   log $ "JOIN `compose` the functions and then `pure`/lift and then `map` over (Just 2) and then `join`:\n\t"
-    <> ( show
+    <>
+      ( show
           $ join
           $ map
               ( pure
@@ -112,7 +120,8 @@ test = do
               (Just 2)
       )
   log $ "helper bind' via JOIN:\n\t"
-    <> ( show
+    <>
+      ( show
           $ Just 2
               `bind'`
                 ( pure
@@ -122,12 +131,13 @@ test = do
       ) -- needs parentheses because operator precedence is not set for `bind`
   log $ "monad do:\n\t"
     <> show do
-        x <- Just 2
-        y <- pure $ x + 1
-        z <- pure $ y + 2
-        pure z
+      x <- Just 2
+      y <- pure $ x + 1
+      z <- pure $ y + 2
+      pure z
   log $ "monad do let:\n\t"
-    <> ( show do
+    <>
+      ( show do
           x <- Just 2
           let
             y = x + 1

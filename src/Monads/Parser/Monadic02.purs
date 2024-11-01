@@ -12,7 +12,7 @@ import Data.String.CodePoints (codePointFromChar)
 import Data.String.CodeUnits (fromCharArray, uncons)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 {--
   NOTE: high level view
@@ -150,12 +150,12 @@ alphaNum = letter <|> digit
 -- NOTE: unit test
 test :: Effect Unit
 test = do
-  --print do
+  --println do
   --let
   --x = "ABC"
   --y = parse take1char $ x -- :: Either ErrorMsg _
   --y = unwrap' take1char $ x :: Either ErrorMsg _
   --y
-  print $ (parse take2chars $ "ABC")
-  print $ (parse take2chars $ "ABC")
-  print $ (parse take2chars $ "AB")
+  println $ (parse take2chars $ "ABC")
+  println $ (parse take2chars $ "ABC")
+  println $ (parse take2chars $ "AB")

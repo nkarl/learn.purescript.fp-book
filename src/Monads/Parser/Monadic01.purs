@@ -11,7 +11,7 @@ import Data.String.CodePoints (codePointFromChar)
 import Data.String.CodeUnits (fromCharArray, uncons)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 -- | A State. a Tuple of String and a polymorphic type `a`.
 type State a
@@ -140,9 +140,9 @@ instance altParse :: Alt (Context e) where
 
 test :: Effect Unit
 test = do
-  print $ ((unwrap take1char_ $ "ABC") :: Either ErrorEOF _)
-  print $ ((unwrap take2chars $ "ABC") :: Either ErrorEOF _)
-  print $ ((unwrap take3chars $ "ABC") :: Either ErrorEOF _)
-  print $ ((unwrap take3chars $ "AB") :: Either ErrorEOF _)
-  print $ ((unwrap take3chars' $ "ABC") :: Either ErrorEOF _)
-  print $ ((unwrap take3chars' $ "AB") :: Either ErrorEOF _)
+  println $ ((unwrap take1char_ $ "ABC") :: Either ErrorEOF _)
+  println $ ((unwrap take2chars $ "ABC") :: Either ErrorEOF _)
+  println $ ((unwrap take3chars $ "ABC") :: Either ErrorEOF _)
+  println $ ((unwrap take3chars $ "AB") :: Either ErrorEOF _)
+  println $ ((unwrap take3chars' $ "ABC") :: Either ErrorEOF _)
+  println $ ((unwrap take3chars' $ "AB") :: Either ErrorEOF _)

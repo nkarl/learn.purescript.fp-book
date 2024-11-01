@@ -1,6 +1,6 @@
 module Maybe.Maybe02 where
 
-import Prelude
+import Prelude (class Show, Unit, ($), discard, (<>), show, (+), (<<<), (>>>))
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)

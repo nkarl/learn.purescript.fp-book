@@ -5,7 +5,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Int.Bits ((.&.))
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 -- Maybe
 data Maybe a
@@ -69,14 +69,14 @@ gaunlet3 x =
 
 testMaybe :: Effect Unit
 testMaybe = do
-  print $ gaunlet 14
-  print $ gaunlet 1
-  print $ gaunlet 93
-  print $ gaunlet 17
-  print $ gaunlet3 14
-  print $ gaunlet3 1
-  print $ gaunlet3 93
-  print $ gaunlet3 17
+  println $ gaunlet 14
+  println $ gaunlet 1
+  println $ gaunlet 93
+  println $ gaunlet 17
+  println $ gaunlet3 14
+  println $ gaunlet3 1
+  println $ gaunlet3 93
+  println $ gaunlet3 17
 
 -- Either
 data Either a b
@@ -127,17 +127,17 @@ lessThanTestE max x =
 
 testEither :: Effect Unit
 testEither = do
-  print $ (_ * 10) <$> (Right 20 :: Either Unit _)
-  print $ (Right (_ * 10) :: Either Unit _) <*> (Right 20)
-  print $ Right (_ * 10) <*> (pure 20 :: Either Unit _)
-  print $ (Right 20 :: Either Unit _) >>= pure <<< (_ * 10)
-  print do
+  println $ (_ * 10) <$> (Right 20 :: Either Unit _)
+  println $ (Right (_ * 10) :: Either Unit _) <*> (Right 20)
+  println $ Right (_ * 10) <*> (pure 20 :: Either Unit _)
+  println $ (Right 20 :: Either Unit _) >>= pure <<< (_ * 10)
+  println do
     x <- Right 20 :: Either Unit _
     let
       y = x * 10
     pure y
-  print $ Right 20 >>= const (Left "error") >>= \y -> Right $ y + 42
-  print do
+  println $ Right 20 >>= const (Left "error") >>= \y -> Right $ y + 42
+  println do
     _ <- Right 20
     y <- Left "error"
     pure $ y + 42

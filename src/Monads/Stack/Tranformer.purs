@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 type AppStack e w s a
   = ExceptT e (WriterT w (StateT s Identity)) a
@@ -52,6 +52,6 @@ app = do
 
 test :: Effect Unit
 test = do
-  print $ "Monads.Stack.Transformer tests"
-  print $ runApp 0 app
-  print $ runApp 99 app
+  println $ "Monads.Stack.Transformer tests"
+  println $ runApp 0 app
+  println $ runApp 99 app

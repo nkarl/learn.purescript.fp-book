@@ -8,7 +8,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (fromMaybe)
 import Data.String (length)
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 
 data Tree a
@@ -64,4 +64,4 @@ test = do
   let
     nums = [6, 4, 3, 5, 7, 1, 9] :: Array Int
     t = makeTree nums
-  print t
+  println t

@@ -8,12 +8,7 @@
     flake-compat.flake = false;
   };
 
-  outputs =
-    { self
-    , nixpkgs
-    , purescript-overlay
-    , ...
-    }:
+  outputs = { self, nixpkgs, purescript-overlay, ... }:
     let
       name = "halogen-hello-world";
 
@@ -32,7 +27,7 @@
           inherit name;
           buildInputs = [
             pkgs.esbuild
-            pkgs.nodejs_20
+            pkgs.nodejs_22
             pkgs.purs
             pkgs.purs-tidy
             pkgs.purs-backend-es

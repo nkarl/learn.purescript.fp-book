@@ -4,8 +4,8 @@ import Prelude
 
 import Effect (Effect)
 
-import Utils (print)
+import Utils (println)
 
 test :: Effect Unit
 test = do
-  print "placeholder"
+  println "placeholder"

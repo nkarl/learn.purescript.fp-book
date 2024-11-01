@@ -4,7 +4,7 @@ import Prelude
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
-import Utils (print)
+import Utils (println)
 
 {-- DATA MODEL --}
 data Either' a b -- sum type of binary choices with more freedom
@@ -36,23 +36,23 @@ infix 4 apply as <*>
 
 test :: Effect Unit
 test = do
-  print (Right 1 :: Either' Unit _)
-  print
+  println (Right 1 :: Either' Unit _)
+  println
     ( Right (_ + 2)
         <*> ( Right (_ + 1)
               <*> (Right 1 :: Either' Unit _)
           )
     )
-  print $ (Right 1 :: Either' Unit _)
+  println $ (Right 1 :: Either' Unit _)
     >>= pure
     <<< (_ + 1)
     >>> (_ + 2)
-  print do
+  println do
     x <- (Right 1 :: Either' Unit _)
     y <- pure $ x + 1
     z <- pure $ y + 2
     pure z
-  print do
+  println do
     x <- (Right 1 :: Either' Unit _)
     let
       y = x + 1

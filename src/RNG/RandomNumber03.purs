@@ -19,7 +19,7 @@ import Effect.Random (random)
     - greater than 0.5
     - less    than 0.5
     - less    than 0.5 and greater than 0.1
-    The program shall print these values to the console.
+    The program shall println these values to the console.
 --}
 {--
   NOTE: Program Specs.
