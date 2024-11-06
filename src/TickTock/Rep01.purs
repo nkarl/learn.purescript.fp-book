@@ -12,7 +12,7 @@ data TickTock
   | Tock
 
 newtype ClockState
-  = Avar TickTock
+  = AVar TickTock
 
 runClock :: AVar TickTock -> Aff Unit
 runClock state = do

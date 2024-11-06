@@ -1,12 +1,15 @@
 module Ch23b where
 
 import Prelude
-import Control.Monad.Reader.Trans (ReaderT, ask, runReaderT)
+
+import Control.Monad.Reader.Trans (ReaderT, runReaderT)
+import Control.Monad.Reader.Trans as ReaderTrans
+import Control.Monad.State.Trans (StateT, runStateT)
+import Control.Monad.State.Trans as StateTrans
 import Control.Monad.Rec.Class (forever)
-import Control.Monad.State.Trans (StateT, get, modify_, runStateT)
-import Control.Monad.Trans.Class (lift)
+import Data.Either (Either(..))
 import Effect (Effect)
-import Effect.Aff (Aff, Milliseconds(..), delay, forkAff, launchAff_)
+import Effect.Aff (Aff, Error, Milliseconds(..), delay, forkAff, launchAff_, makeAff, nonCanceler)
 import Effect.Aff.Bus (BusRW)
 import Effect.Aff.Bus as Bus
 import Effect.Aff.Class (liftAff)
@@ -15,94 +18,78 @@ import Effect.Class.Console (log)
 import Effect.Random (random)
 
 {--
-  NOTE: TYPES AND ALIASES
+  TYPES AND ALIASES
 --}
--- `BusRW :: Bus ( read :: Cap, write :: Cap)` is a row type.
--- | is a Bus that reads and writes strings.
+
+-- | `BusRW` is a closed row type, that is a bus for reading and writing data (`String` in this case).
 type StrBus = BusRW String
 
 -- | could contain more properties, for example env variables.
 type Reader = { bus :: StrBus }
+-- | the program's state, contains the countDown.
+type State = { countDown :: Int }
 
--- | the program's state, contains the count.
-type State = { count :: Int }
-
-{--
-  NOTE: can it be replaced with `forE` instead?
-    - `forE` would NOT work, because `count` is modified on each fiber spawning.
-        - Leaving `count` in a global state allows for non-linear growth of fibers.
-    - `forE`restricts fiber spawning to linear growth; only one fiber can be spawn at a time.
-        - This is fine if there is only one predicate. However,
-        - we need to spawn 3 fibers with indenpendent predicates concurrently.
-    - in other words, `count` needs to "float" so that fibers can spawn; it cannot be a linear iterator a la `forE` in this case.
---}
--- each fiber is composed as a stack of Reader $ State $ Aff
---  FiberMS a :: ReaderT r      m                    a
-type FiberMS a = ReaderT Reader (StateT State (Aff)) a
+-- | This is our monad stack. This stack has only the State and Reader monads.
+-- | each fiber is composed as a stack: Reader (State (Aff (Effect)))
+-- | FiberM a ::ReaderT r      m                    a
+type FiberM a = ReaderT Reader (StateT State (Aff)) a
 
 {--
-  NOTE: ACTIONS
+  ACTIONS
 --}
---Callback :: (Either Error a -> Effect Unit)
---makeAff  :: Callback a -> Effect Canceler -> Aff a
--- | a random number lifted into Aff.
+
+type Callback a = Either Error a -> Effect Unit
+
+--makeAff  :: forall a. Callback a -> Effect Canceler -> Aff a
+
+affRandom' :: Aff Number
+affRandom' = makeAff \cb -> do
+  n <- random
+  cb $ Right n -- no cases bc we interop on-system with a FFI `Math.random`. `Effect` wrapper is required for all FFI.
+  pure nonCanceler
+
 affRandom :: Aff Number
-affRandom = liftEffect random -- we replace callbacks with `liftEffect` and thus reduce LOC
+affRandom = liftEffect random -- replaces the callback with `liftEffect` and thus reduce LOC
 
---makeAff \cb -> do
---n <- random
---cb $ Right n
---pure nonCanceler
 {--
-  - how to run something inside a fiber?
-    - "running" means that given an input `FiberMS`, we produce some output wrapped in an `Aff`.
-    - we look at the definition of `FiberMS`, ie our monad stack.
-      - ReaderT is outermost, then StateT and finally Aff a.
-      - we don't need anything return from Aff, so we return a `Unit` wrapped by Aff.
+  - what does it mean to run something in a `FiberM`?
+    - a `FiberM` is a monadic context. Inside, we perform some async actions (hence `Aff` at the base).
+    - _running_ is an executive action; it doesn't need to produce any data. thus the generic Unit as output.
 --}
--- | takes a BusRW and returns a fibric function that will process later.
-runFiberM :: BusRW String -> (FiberMS Unit -> Aff Unit) -- (Tuple Unit State)
+-- | takes a BusRW and returns a fiber morphism for processing at a later time.
+runFiberM :: BusRW String -> (FiberM Unit -> Aff Unit)
 runFiberM bus =
-  void -- coerce the polymorphic type `a` to Unit
-
+  void
     <<< forkAff -- fork a new fiber for this call
-    -- runStateT  :: (StateT  s m a) -> s -> m a
+    <<< flip runStateT { countDown: 10 } -- flip to take `s` first
+    <<< flip runReaderT { bus } -- flip to take `r` first
 
-    <<< flip runStateT { count: 10 } -- flip to take `s` first and `StateT s m a` later, partial
-    -- runReaderT :: (ReaderT r m a) -> r -> m a
-
-    <<< flip runReaderT { bus } -- flip to take `r` first and `ReaderT r m a` later, partial
-
--- | subscribe fiber
-logger :: FiberMS Unit
-logger =
-  forever do
-    { bus } <- ask
-    s <- liftAfftoFiberM $ Bus.read bus
-    log $ "Logger: " <> s
-
--- | factored out
-liftAfftoFiberM :: Aff ~> FiberMS
-liftAfftoFiberM = liftAff -- lift <<< lift
-
--- | the desired randomized value wrapped in Aff.
+-- | generates a random value with a delay; can be run async.
 delayRandom :: Aff Number
 delayRandom = delay (Milliseconds 1000.0) *> affRandom
 
--- | publish/broadcast fiber
-randomGenerator :: String -> (Number -> Boolean) -> FiberMS Unit
+-- | NOTE: subscribe fiber
+logger :: FiberM Unit
+logger = forever do
+  { bus } <- ReaderTrans.ask
+  s <- liftAff $ Bus.read bus
+  log $ "Logger: " <> s
+
+-- | NOTE: publish/broadcast fiber
+randomGenerator :: String -> (Number -> Boolean) -> FiberM Unit
 randomGenerator predLabel pred = do
-  { count } <- get
-  unless (count <= 0) do
-    { bus } <- ask
-    liftAfftoFiberM do
+  { countDown } <- StateTrans.get
+  -- only run this action for 10s.
+  unless (countDown <= 0) do
+    { bus } <- ReaderTrans.ask
+    liftAff do
       n <- delayRandom
       let
         output = "Found a value that is " <> predLabel <> " (" <> show n <> ")"
       when (pred n) $ Bus.write output bus
-    --put { count: count - 1 }
-    modify_ _ { count = count - 1 }
-    randomGenerator predLabel pred
+    --StateTrans.put { countDown: countDown - 1 }
+    StateTrans.modify_ _ { countDown = countDown - 1 } -- counts down after every delayed generation (1.000 s)
+    randomGenerator predLabel pred -- NOTE: recursive call only when `countDown <= 0`.
 
 -- | tests the effect of module Ch23b
 test :: Effect Unit
@@ -110,19 +97,31 @@ test =
   launchAff_ do
     bus <- Bus.make
     let
-      forkFiberM = runFiberM bus
-    forkFiberM $ logger
-    forkFiberM $ randomGenerator "greater than 0.5\t" (_ > 0.5)
-    forkFiberM $ randomGenerator "less    than 0.5\t" (_ < 0.5)
-    forkFiberM $ randomGenerator "greater than 0.1\t" (_ > 0.1)
+      run :: FiberM Unit -> Aff Unit
+      run = runFiberM bus
+    run $ logger
+    run $ randomGenerator "greater than 0.5\t" (_ > 0.5)
+    run $ randomGenerator "less    than 0.5\t" (_ < 0.5)
+    run $ randomGenerator "greater than 0.1\t" (_ > 0.1)
 
 {--
   NOTE: on `launchAff` and `forkAff`
-    launchAff ::   Aff a -> Effect (Fiber a)
+    launchAff :: Aff a -> Effect (Fiber a)
     - this is good for running an Aff in the main Effect, because it takes an `Aff` and (spawns and) returns a fiber inside an `Effect`.
       - however, what if we are in an `Aff`, and want to create another fiber?
-        - we need `Aff a -> Aff    (Fiber a)`
-    forkAff   ::   Aff a -> Aff    (Fiber a)
-    forkAff lets us fork another fiber inside an Aff.
-    launchAff launches a fiber inside an Effect. In other words, launchAff creates an patient-zero fiber.
+    - we need
+    forkAff   :: Aff a -> Aff    (Fiber a)
+    `forkAff` lets us create another fiber inside an Aff (unified context via `Aff`).
+    `launchAff` creates an `Effect` context that contains an fiber.
 --}
+
+{--
+  NOTE can it be replaced with `forE` instead?
+    - `forE` would NOT work, because `countDown` is modified on each fiber spawning.
+        - Leaving `countDown` in a global state allows for non-linear growth of fibers.
+    - `forE`restricts fiber spawning to linear growth; only one fiber can be spawn at a time.
+        - This is fine if there is only one predicate. However,
+        - we need to spawn 3 fibers with indenpendent predicates concurrently.
+    - in other words, `countDown` needs to "float" so that fibers can spawn; it cannot be an iterator a la `forE` in this case.
+--}
+
